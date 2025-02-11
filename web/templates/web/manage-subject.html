@@ -1,0 +1,44 @@
+{% extends "./base.html" %}
+{% load static %}
+
+{% block title %}Gestión de materia{% endblock %}
+
+{% block content %}
+<div id="loader-container" class="loader-container" style="display: none;">
+  <div class="loader"></div>
+</div>
+<div class="container py-4">
+  <h2 class="mb-4">Gestión de materia</h2>
+
+  <!-- Tabla de registros -->
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Acción</th>
+      </tr>
+    </thead>
+    <tbody id="table-body">
+      
+    </tbody>
+  </table>
+
+  <!-- Formulario para añadir/modificar registros -->
+  <h3 class="mt-5 mb-3">Añadir/Modificar Registro</h3>
+  <form id="registroForm" onsubmit="crudRegistro(event)">
+    <input type="hidden" id="registroId" name="id">
+    <div class="mb-3">
+      <label for="nombre" class="form-label">Nombre</label>
+      <input type="text" class="form-control" id="nombre" name="nombre" required>
+    </div>
+    <button type="submit" class="btn btn-success">Guardar</button>
+    <button type="button" class="btn btn-secondary" onclick="limpiarFormulario()">Limpiar</button>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_body %}
+<!-- Cargar scripts -->
+<script type="module" src="{% static 'js/v.manage-subject.js' %}"></script>
+{% endblock %}

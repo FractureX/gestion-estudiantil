@@ -1,0 +1,52 @@
+{% extends "./base.html" %}
+{% load static %}
+
+{% block title %}Simulador{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Uso del simulador Header -->
+  <h1>Uso del simulador</h1>
+
+  <div class="mb-4 table-responsive">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Número de Acceso</th>
+          <th>Número de Intento al Día</th>
+          <th>Nombre de Estudiante</th>
+          <th>Periodo</th>
+          <th>Materia</th>
+        </tr>
+      </thead>
+      <tbody id="table-simulator-body">
+        
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Mayor hora de actividad por día Header -->
+  <h2>Mayor hora de actividad por día</h1>
+
+  <div class="mb-4 table-responsive">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Usos</th>
+        </tr>
+      </thead>
+      <tbody id="table-hour-simulator-body">
+        
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_body %}
+<!-- Scripts-->
+<script type="module" src="{% static 'js/v.simulator.js' %}"></script>
+<!-- ------ -->
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "./base.html" %}
+{% load static %}
+
+{% block title %}Detalles de evaluación{% endblock %}
+
+{% block content %}
+
+<div id="quiz-details" class="container py-4">
+  <h1 id="title" class="mb-4"></h1>
+  
+  <!-- Preguntas, respuesta y clasificación -->
+  <div id="qas" class="mb-4">
+    
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_body %}
+<!-- Cargar scripts -->
+<script type="module" src="{% static 'js/v.evaluation-details.js' %}"></script>
+{% endblock %}

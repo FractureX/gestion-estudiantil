@@ -1,0 +1,23 @@
+{% extends "./base.html" %}
+{% load static %}
+
+{% block title %}Evaluaciones{% endblock %}
+
+{% block content %}
+<form id="quiz" class="container py-4">
+  <h1 id="title" class="mb-4"></h1>
+  
+  <!-- Preguntas -->
+  <div id="questions" class="mb-4">
+    
+  </div>
+
+  <button id="submitBtn" class="btn btn-primary btn-block">Enviar respuestas</button>
+
+</form>
+{% endblock %}
+
+{% block extra_body %}
+<!-- Cargar scripts -->
+<script type="module" src="{% static 'js/v.evaluation.js' %}"></script>
+{% endblock %}

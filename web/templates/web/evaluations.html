@@ -1,0 +1,35 @@
+{% extends "./base.html" %}
+{% load static %}
+
+{% block title %}Evaluaciones{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h1 class="mb-4">Evaluaciones</h1>
+
+  <!-- Filtrado -->
+  <div class="row g-3 mb-4">
+    <div class="col">
+      <select class="form-select" id="sortSelect">
+        <option value="fecha-evaluacion">Fecha de evaluación</option>
+        <option value="nombre">Nombre</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Evaluaciones -->
+  <div id="evaluations" class="g-4 mb-4">
+    
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_body %}
+<!-- Cargar scripts -->
+<script type="module" src="{% static 'js/v.evaluations.js' %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
+</script>
+{% endblock %}

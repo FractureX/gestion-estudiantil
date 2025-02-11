@@ -1,0 +1,39 @@
+{% extends "./base.html" %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div id="loader-container" class="loader-container" style="display: none;">
+  <div class="loader"></div>
+</div>
+<div class="container py-4">
+  <!-- Dashboard Header -->
+  <h1 class="mb-4">Dashboard</h1>
+
+  <!-- Materias -->
+  <div id="subjects" class="row g-4 mb-4">
+    
+  </div>
+
+  <!-- Evaluaciones -->
+  <h2 class="h4 mb-4">Próximas evaluaciones</h2>
+  <div id="evaluations" class="row g-4 mb-4">
+    
+  </div>
+
+  <!-- Recent Activity -->
+  <h2 class="h4 mb-3">Actividad reciente</h2>
+  <div id="containerRecentActivities" class="card" style="opacity: 0;">
+    <ul id="recentActivities" class="list-group list-group-flush">
+      
+    </ul>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_body %}
+<!-- Scripts-->
+<script type="module" src="{% static 'js/v.index.js' %}"></script>
+<!-- ------ -->
+{% endblock %}

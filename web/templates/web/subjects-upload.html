@@ -1,0 +1,58 @@
+{% extends "./base.html" %}
+{% load static %}
+
+{% block title %}Materias{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Materias Header -->
+  <h1 class="mb-4">Carga de PDFs</h1>
+  <div class="card">
+    <div class="card-header">
+      <h5 class="card-title mb-0"></h5>
+    </div>
+    <div class="card-body">
+      <form id="uploadForm">
+        <!-- Área de carga -->
+        <div class="border border-2 border-dashed rounded p-4 text-center mb-4" id="dropZone">
+          <p class="text-muted">Arrastra y suelta tus archivos PDF aquí</p>
+          <p class="text-muted small">o</p>
+          <input type="file" id="fileInput" multiple accept=".pdf" class="d-none">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('fileInput').click()">
+            Seleccionar archivos
+          </button>
+        </div>
+
+        <!-- Archivos por cargar -->
+        <h6 class="mb-3">Archivos por cargar</h6>
+        <div id="filesToUpload">
+          <!-- Los archivos seleccionados se mostrarán aquí -->
+        </div>
+        <button type="submit" class="btn btn-primary mb-4">Subir archivo(s)</button>
+
+        <!-- Archivos cargados -->
+        <h6 class="mb-3">Archivos cargados</h6>
+        <!-- Filtrado -->
+        <div class="row g-3 mb-4">
+          <div class="col">
+            <select class="form-select" id="sortSelect">
+              <option value="fecha-carga">Fecha de carga</option>
+              <option value="nombre">Nombre</option>
+            </select>
+          </div>
+        </div>
+        <div id="uploadedFiles">
+          
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_body %}
+<!-- Scripts-->
+<script type="module" src="{% static 'js/v.subjects-upload.js' %}"></script>
+<!-- ------ -->
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "./base.html" %}
+{% load static %}
+
+{% block title %}Materias{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Materias Header -->
+  <h1 class="mb-4">Materias</h1>
+
+  <!-- Materias Cards -->
+  <div id="subjects" class="row g-4">
+    
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_body %}
+<!-- Scripts-->
+<script type="module" src="{% static 'js/v.subjects.js' %}"></script>
+<!-- ------ -->
+{% endblock %}

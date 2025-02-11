@@ -1,0 +1,58 @@
+{% extends "./base.html" %}
+{% load static %}
+
+{% block title %}Gestión de materias por periodo{% endblock %}
+
+{% block content %}
+<div id="loader-container" class="loader-container" style="display: none;">
+  <div class="loader"></div>
+</div>
+<div class="container py-4">
+  <h2 class="mb-4">Gestión de materias por periodo</h2>
+
+  <!-- Tabla de registros -->
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Periodo</th>
+        <th>Materia</th>
+        <th>Acción</th>
+      </tr>
+    </thead>
+    <tbody id="table-body">
+
+    </tbody>
+  </table>
+
+  <!-- Formulario para añadir/modificar registros -->
+  <h3 class="mt-5 mb-3">Añadir/Modificar Registro</h3>
+  <form id="registroForm" onsubmit="crudRegistro(event)">
+    <input type="hidden" id="registroId" name="id">
+
+    <!-- Campo para seleccionar periodo -->
+    <div class="mb-3">
+      <label for="periodo" class="form-label">Periodo</label>
+      <select class="form-control" id="periodo" name="periodo" required>
+        <option value="" disabled selected>Seleccione un periodo</option>
+      </select>
+    </div>
+
+    <!-- Campo para seleccionar materia -->
+    <div class="mb-3">
+      <label for="materia" class="form-label">Materia</label>
+      <select class="form-control" id="materia" name="materia" required>
+        <option value="" disabled selected>Seleccione una materia</option>
+      </select>
+    </div>
+
+    <button type="submit" class="btn btn-success">Guardar</button>
+    <button type="button" class="btn btn-secondary" onclick="limpiarFormulario()">Limpiar</button>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_body %}
+<!-- Cargar scripts -->
+<script type="module" src="{% static 'js/v.manage-period-subject.js' %}"></script>
+{% endblock %}

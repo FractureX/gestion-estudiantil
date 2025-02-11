@@ -1,0 +1,32 @@
+{% extends "./base.html" %}
+{% load static %}
+
+{% block title %}Preguntas fallidas{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h1 class="mb-4">Preguntas fallidas</h1>
+
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Materia</th>
+        <th>Evaluación</th>
+        <th>Pregunta</th>
+        <th>Respuesta</th>
+        <th>Puntaje</th>
+      </tr>
+    </thead>
+    <tbody id="table-question-body">
+      
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+{% block extra_body %}
+<!-- Scripts-->
+<script type="module" src="{% static 'js/v.questions.js' %}"></script>
+<!-- ------ -->
+{% endblock %}

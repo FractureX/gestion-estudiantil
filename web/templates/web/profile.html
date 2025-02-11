@@ -1,0 +1,106 @@
+{% extends "./base.html" %}
+{% load static %}
+
+{% block title %}Perfil{% endblock %}
+
+{% block content %}
+<style>
+  .avatar {
+    width: 120px;
+    height: 120px;
+    background-color: #3498db;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .stats-card {
+    background-color: #f8f9ff;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .progress-card {
+    background-color: #f0fff4;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .notification-card {
+    background-color: #fff5eb;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .form-check-input {
+    width: 3em;
+    height: 1.5em;
+  }
+</style>
+
+<div class="container py-4">
+  <h1 class="mb-4">Perfil del Estudiante</h1>
+
+  <!-- Profile Header -->
+  <div class="bg-white p-4 rounded-3 shadow-sm mb-4">
+    <div class="text-center">
+      <div id="inicial" class="avatar mx-auto">
+      </div>
+      <div>
+        <h2 id="nombre" class="h4"></h2>
+        <input style="display: none;" type="text" name="inputnombre" id="inputnombre" placeholder="Ingrese los nombres">
+        <input style="display: none;" type="text" name="inputapellido" id="inputapellido" placeholder="Ingrese los apellidos">
+        <input style="display: none;" type="password" name="inputpassword" id="inputpassword" placeholder="Ingrese la contraseña">
+        <select id="rolselect" style="display: none;">
+          
+        </select>
+      </div>
+      <div>
+        <span class="h6">Rol: <span class="text-muted" id="role"></span></span>
+      </div>
+      <div>
+        <span class="h6">Periodo: <span class="text-muted" id="periodo"></span></span>
+      </div>
+      <div>
+        <span class="h6">Correo: <span id="email" class="text-muted mb-3"></span></span>
+      </div>
+      <button id="editar" class="btn btn-primary px-4">Editar Perfil</button>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Statistics -->
+    <div class="col-md-6 mb-4">
+      <div class="stats-card">
+        <h3 class="h5 mb-4">Estadísticas de Rendimiento</h3>
+        <div class="mb-3">
+          <!-- <p class="mb-1">Promedio general: 10%</p> -->
+          <p class="mb-1">Evaluaciones completadas: <span id="evaluaciones-completadas"></span></p>
+          <p class="mb-1">Temas dominados: <span id="temas-dominados"></span></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress -->
+    <div class="col-md-6 mb-4">
+      <div id="progreso" class="progress-card">
+        <h3 class="h5 mb-4">Progreso por Materia</h3>
+        
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_body %}
+<!-- Cargar scripts -->
+<script type="module" src="{% static 'js/v.profile.js' %}"></script>
+{% endblock %}

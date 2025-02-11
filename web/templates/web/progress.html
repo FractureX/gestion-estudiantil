@@ -1,0 +1,46 @@
+{% extends "./base.html" %}
+{% load static %}
+
+{% block title %}Progreso{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h1 class="mb-4">Progreso General</h1>
+
+  <div class="card mb-4">
+    <div class="card-body">
+      <h5 class="card-title">Progreso por Materia</h5>
+      <div id="subjects" class="mb-3">
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6">
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 class="card-title">Estadísticas de Estudio</h5>
+          <p><b>Evaluaciones completadas:</b> <span id="completedEvaluations"></span></p>
+          <p><b>Promedio de evaluaciones:</b> <span id="average"></span>%</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 class="card-title">Rendimiento en el Tiempo</h5>
+          <canvas id="rendimientoChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_body %}
+<!-- Scripts-->
+<script type="module" src="{% static 'js/v.progress.js' %}"></script>
+<script type="module" src="{% static 'js/chart.js' %}"></script>
+<!-- ------ -->
+{% endblock %}
