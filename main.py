@@ -10,3 +10,4 @@ input_ids = tokenizer.encode(text, return_tensors="pt")
 output_ids = model.generate(input_ids, max_length=100, num_return_sequences=1)
 mcq = tokenizer.decode(output_ids[0], skip_special_tokens=True)
 print(mcq)
+# Hola este es un mensaje
