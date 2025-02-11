@@ -62,7 +62,8 @@ async function onLoad() {
 
     // Comparar la fecha actual con la fecha original y la fecha con duración
     let iniciarEvaluacion = false;
-    let verDetalles = false;
+    // let verDetalles = false;
+    let verDetalles = true;
 
     // Condiciones para verificar si se puede iniciar la evaluación o ver detalles
     if (fechaActual > fechaLocal && fechaActual <= fechaConDuracion && evaluacion.duracion !== "00:00:00") {

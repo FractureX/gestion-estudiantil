@@ -12,6 +12,7 @@ import {
 } from "./historial_data.js";
 import { makeRequest } from "./request.js";
 import { getCurrentDateTime } from "./utils.js";
+import { showNotification } from './functions.js'
 
 let evaluation = null
 let questions = null
@@ -32,7 +33,7 @@ async function validateQuestions(event) {
   validateResponses()
 
   // Actualizar la duración de la evaluación
-  await makeRequest(URL_EVALUACION_UPDATE, 'PATCH', {}, {"duracion": "00:00:00"}, {'Content-Type': 'application/json'}, sessionStorage.getItem("access_token"), {"id": evaluation.data.id})
+  // await makeRequest(URL_EVALUACION_UPDATE, 'PATCH', {}, {"duracion": "00:00:00"}, {'Content-Type': 'application/json'}, sessionStorage.getItem("access_token"), {"id": evaluation.data.id})
 
   // Insertar respuestas
   questions.data.forEach(async(question, index) => {
@@ -43,8 +44,10 @@ async function validateQuestions(event) {
   const fechaActualUTC = getCurrentDateTime();
   await makeRequest(URL_HISTORIAL_CREATE, 'POST', {}, {"usuario": userInfo.data.id, "descripcion": `${EVALUACION_FINALIZADA} ${evaluation.data.titulo}`, "fecha": fechaActualUTC}, {'Content-Type': 'application/json'}, sessionStorage.getItem("access_token"));
   
-  alert("Respuestas enviadas")
-  window.location.href = "/"
+  showNotification("success", "Respuestas enviadas")
+  setTimeout(() => {
+    window.location.href = "/"
+  }, 3000);
 }
 
 async function onLoad() {

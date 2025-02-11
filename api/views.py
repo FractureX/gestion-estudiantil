@@ -233,7 +233,7 @@ class UsuarioViewSet(viewsets.ModelViewSet):
         # Datos a reemplazar
         replacements = {
           "var_nombre": f"{usuario.nombres} {usuario.apellidos}",
-          "var_cedula": f"{str(usuario.dni)}",
+          "var_cedula": f"{str(usuario.cedula)}",
           "var_periodo": f"{usuario.periodo.nombre}",
           "var_pdfs": str(len(documentos_pdf)), 
           "var_preguntas": str(len(preguntas)), 

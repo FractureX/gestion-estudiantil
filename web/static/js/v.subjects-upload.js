@@ -9,6 +9,7 @@ import { MENSAJE_CARGAR_PDF } from "./historial_data.js"
 import { makeRequest } from "./request.js";
 import { getCurrentDateTime } from "./utils.js";
 import { getPagesPerWeek, getWeeksBetweenDates, showNotification } from "./functions.js";
+import { INSERT_ERROR_MESSAGE } from './messages.js'
 
 // Funcionalidad de arrastrar y soltar
 const dropZone = document.getElementById('dropZone');
@@ -187,8 +188,16 @@ async function uploadFiles() {
     formData.append('fecha_evaluacion', selectedDate); // Enviar la fecha seleccionada
 
     // Realizar la solicitud para cargar el archivo
-    await makeRequest(URL_DOCUMENTOS_PDF_CREATE, 'POST', {}, formData, {}, sessionStorage.getItem("access_token"));
-    await makeRequest(URL_HISTORIAL_CREATE, 'POST', {}, { "usuario": usuario.data.id, "descripcion": `${MENSAJE_CARGAR_PDF} ${file.name}`, "fecha": fechaActualUTC }, { 'Content-Type': 'application/json' }, sessionStorage.getItem("access_token"));
+    let response = await makeRequest(URL_DOCUMENTOS_PDF_CREATE, 'POST', {}, formData, {}, sessionStorage.getItem("access_token"));
+    if (response.status !== 201) {
+      showNotification("error", INSERT_ERROR_MESSAGE)
+      return;
+    }
+    response = await makeRequest(URL_HISTORIAL_CREATE, 'POST', {}, { "usuario": usuario.data.id, "descripcion": `${MENSAJE_CARGAR_PDF} ${file.name}`, "fecha": fechaActualUTC }, { 'Content-Type': 'application/json' }, sessionStorage.getItem("access_token"));
+    if (response.status !== 201) {
+      showNotification("error", INSERT_ERROR_MESSAGE)
+      return;
+    }
   }
 
   if (i === files.length && i > 0) {

@@ -46,7 +46,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
   periodo = models.ForeignKey(to=Periodo, on_delete=models.CASCADE, related_name="usuarios", null=True)
   nombres = models.CharField(max_length=50, null=False)
   apellidos = models.CharField(max_length=50, null=False)
-  dni = models.CharField(max_length=20, unique=True, null=False)
+  cedula = models.CharField(max_length=20, unique=True, null=False)
   email = models.EmailField(unique=True, null=False)
   password = models.CharField(max_length=128, null=False)
   is_superuser = models.BooleanField(default=False)
@@ -56,13 +56,13 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
   objects = UsuarioManager()
 
   USERNAME_FIELD = 'email'
-  REQUIRED_FIELDS = ['nombres', 'apellidos', 'dni']
+  REQUIRED_FIELDS = ['nombres', 'apellidos', 'cedula']
 
 class DocumentoPDF(models.Model):
   usuario = models.ForeignKey(to=Usuario, on_delete=models.CASCADE, related_name="documentos_pdf", null=False)
   materia_periodo = models.ForeignKey(to=MateriaPeriodo, on_delete=models.CASCADE, related_name="documentos_pdf", null=False)
   archivo = models.FileField(null=False, validators=[validate_pdf], upload_to="api/documentos_pdf/")
-  fecha = models.DateTimeField(null=False, default=timezone.now)
+  fecha = models.DateTimeField(null=False, default=datetime.datetime.now())
 
 class Evaluacion(models.Model):
   documento_pdf = models.OneToOneField(to=DocumentoPDF, on_delete=models.CASCADE, related_name="evaluaciones", null=False)

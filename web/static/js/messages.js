@@ -15,6 +15,10 @@ export const INSERT_MESSAGE = "Registro insertado exitosamente";
 export const UPDATE_MESSAGE = "Registro modificado exitosamente";
 export const DELETE_MESSAGE = "Registro eliminado exitosamente";
 
+export const INSERT_ERROR_MESSAGE = "Hubo un problema insertando el registro";
+export const UPDATE_ERROR_MESSAGE = "Hubo un problema modificando el registro";
+export const DELETE_ERROR_MESSAGE = "Hubo un problema eliminando el registro";
+
 export const PERIODO_INGRESAR_NOMBRE = "Debe ingresar un nombre para el periodo";
 
 export const MATERIA_INGRESAR_NOMBRE = "Debe ingresar un nombre para la materia";

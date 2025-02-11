@@ -71,19 +71,22 @@ export async function verifyOtpCode() {
   return returnValue;
 }
 
-export async function verifyDni() {
-  const dni = document.getElementById("dni").value;
+export async function verifyCedula(cedula = null) {
+  if (!cedula) {
+    cedula = document.getElementById("cedula").value;
+  }
+  
   let returnValue = false;
   const response = await makeRequest(
     URL_USUARIO_VERIFY_OTP, // baseUrl
     'POST',                 // method
     {},                     // params (query params)
-    { dni: dni }, // body data
+    { cedula: cedula }, // body data
     { 'Content-Type': 'application/json' }, // headers
     null,                   // token
     {}                      // pathParams
   );
-  returnValue = response !== null;
+  returnValue = response.status !== 200;
   return returnValue;
 }
 
@@ -183,22 +186,6 @@ export async function getSubjectsProgress(userInfo) {
   return data;
 }
 
-export async function getPagesPerWeek(fileURL, weeks) {
-  if (weeks === 0) {
-    return "N/A";
-  }
-  try {
-    // Cargar el PDF usando PDF.js desde la URL temporal
-    const pdf = await pdfjsLib.getDocument(fileURL).promise;
-    console.log(`pdf.numPages / weeks: ${pdf.numPages} / ${weeks}`)
-    const pagesPerWeek = pdf.numPages / weeks;
-    return pagesPerWeek; // Retornar el valor
-  } catch (error) {
-    console.error("Error al cargar el PDF:", error);
-    return null; // Retorna null o un valor predeterminado en caso de error
-  }
-}
-
 export function getWeeksBetweenDates(startDate, endDate) {
   const start = new Date(startDate);
   const end = new Date(endDate);
@@ -216,6 +203,22 @@ export function getWeeksBetweenDates(startDate, endDate) {
   const weeks = Math.ceil(diffInDays / 7);
 
   return weeks;
+}
+
+export async function getPagesPerWeek(fileURL, weeks) {
+  if (weeks === 0) {
+    return "N/A";
+  }
+  try {
+    // Cargar el PDF usando PDF.js desde la URL temporal
+    const pdf = await pdfjsLib.getDocument(fileURL).promise;
+    console.log(`pdf.numPages / weeks: ${pdf.numPages} / ${weeks}`)
+    const pagesPerWeek = pdf.numPages / weeks;
+    return pagesPerWeek; // Retornar el valor
+  } catch (error) {
+    console.error("Error al cargar el PDF:", error);
+    return null; // Retorna null o un valor predeterminado en caso de error
+  }
 }
 
 export async function fetchFileAndCreateURL(relativePath) {

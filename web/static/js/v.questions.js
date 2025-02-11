@@ -21,6 +21,7 @@ async function onLoad() {
 
   // Obtener preguntas por id de usuario
   questions = await makeRequest(URL_PREGUNTA_SELECT_ALL, 'GET', {}, null, {}, sessionStorage.getItem("access_token"), {});
+  console.log(questions)
 
   putInfo(userInfo)
 }
@@ -30,7 +31,7 @@ async function putInfo(userInfo) {
   const table_question_body = document.getElementById("table-question-body")
   
   questions.data.forEach(pregunta => {
-    if (pregunta.evaluacion.documento_pdf.usuario.id === userInfo.data.id && pregunta.puntaje < 5 && pregunta.evaluacion.duracion === "00:00:00") {
+    if (pregunta.evaluacion.documento_pdf.usuario.id === userInfo.data.id && pregunta.puntaje < 5) {
       table_question_body.innerHTML += `
         <tr>
           <td>${pregunta.id}</td>

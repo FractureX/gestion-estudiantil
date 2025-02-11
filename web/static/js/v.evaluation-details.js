@@ -1,7 +1,7 @@
 import {
-  URL_EVALUACION_SELECT_BY_ID, 
-  URL_PREGUNTA_SELECT_BY_ID_EVALUACION, 
-  URL_USUARIO_SELECT_INFO 
+  URL_EVALUACION_SELECT_BY_ID,
+  URL_PREGUNTA_SELECT_BY_ID_EVALUACION,
+  URL_USUARIO_SELECT_INFO
 } from "./urls.js";
 import { makeRequest } from "./request.js";
 
@@ -31,7 +31,7 @@ async function onLoad() {
   } else {
     questions = await makeRequest(URL_PREGUNTA_SELECT_BY_ID_EVALUACION, 'GET', { "evaluacion": id_evaluation }, null, {}, sessionStorage.getItem("access_token"), {})
   }
-  
+
   putInfo()
 }
 
@@ -41,15 +41,19 @@ function putInfo() {
 
   // Preguntas
   questions.data.forEach((question, index) => {
+    console.log(question);
+
     const preguntaDiv = document.createElement('div');
     preguntaDiv.className = 'mb-3 card h-100';
+
     const preguntaContentDiv = document.createElement('div');
     preguntaContentDiv.className = 'card-body';
 
+    // Crear el label con la pregunta en negrita
     const preguntaLabel = document.createElement('label');
     preguntaLabel.className = 'form-label';
     preguntaLabel.htmlFor = `pregunta${index}`;
-    preguntaLabel.textContent = `${index + 1}. ${question.pregunta}`;
+    preguntaLabel.innerHTML = `<strong>${index + 1}. ${question.pregunta}</strong>`;
 
     const input = document.createElement('input');
     input.type = 'text';
@@ -57,11 +61,19 @@ function putInfo() {
     input.id = `pregunta${index}`;
     input.name = `pregunta${index}`;
     input.value = `${question.respuesta}`;
-    input.disabled = true
+    input.disabled = true;
 
+    // Crear el elemento para el puntaje con "Puntaje" en negrita
+    const puntajeText = document.createElement('p');
+    puntajeText.className = 'mt-2 text-muted';
+    puntajeText.innerHTML = `<strong>Puntaje:</strong> ${question.puntaje.toFixed(2)}`;
+
+    // Agregar los elementos al contenedor
     preguntaContentDiv.appendChild(preguntaLabel);
     preguntaContentDiv.appendChild(input);
+    preguntaContentDiv.appendChild(puntajeText); // Agregar el puntaje después del input
     preguntaDiv.appendChild(preguntaContentDiv);
+
     document.getElementById("qas").appendChild(preguntaDiv);
   });
 }

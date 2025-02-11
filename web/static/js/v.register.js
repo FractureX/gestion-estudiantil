@@ -1,7 +1,7 @@
 import { URL_USUARIO_CREATE, URL_PERIODO_SELECT_ALL, URL_USUARIO_LOGIN } from './urls.js';
-import { sendOtpCode, verifyEmail, getOtpCode, verifyOtpCode } from './functions.js';
+import { sendOtpCode, verifyEmail, getOtpCode, verifyOtpCode, showNotification, verifyCedula } from './functions.js';
 import { makeRequest } from './request.js';
-import { OTP_INVALIDO, USUARIO_CREACION_PROBLEMA, USUARIO_CORREO_EN_USO } from './messages.js';
+import { OTP_INVALIDO, USUARIO_CREACION_PROBLEMA, USUARIO_CORREO_EN_USO, OTP_ENVIADO } from './messages.js';
 
 // Funciones
 async function loadData() {
@@ -36,21 +36,25 @@ async function loadData() {
 async function validateForm() {
   let names = document.getElementById('names').value;
   let surnames = document.getElementById('surnames').value;
-  let dni = document.getElementById('dni').value;
+  let cedula = document.getElementById('cedula').value;
   let period = parseInt(document.getElementById('period').value);
   let email = document.getElementById('email').value;
   let password = document.getElementById('password').value;
-  if (!names || !surnames || !dni || !period || !email || !password || getOtpCode().length === 0) {
+  if (!names || !surnames || !cedula || !period || !email || !password || getOtpCode().length === 0) {
     return null;
   }
+  // if (!await verifyCedula()) {
+  //   showNotification("error", OTP_INVALIDO)
+  //   return null;
+  // }
   if (!await verifyOtpCode()) {
-    alert(OTP_INVALIDO);
+    showNotification("error", OTP_INVALIDO)
     return null;
   }
   return {
     "nombres": names,
     "apellidos": surnames,
-    "dni": dni,
+    "cedula": cedula,
     "email": email,
     "password": password,
     "periodo": period,
@@ -81,7 +85,7 @@ async function register(event) {
     );
 
     if (createResponse.status !== 201) {
-      alert(USUARIO_CREACION_PROBLEMA);
+      showNotification("error", USUARIO_CREACION_PROBLEMA)
       return;
     }
 
@@ -97,23 +101,24 @@ async function register(event) {
     );
 
     if (tokenResponse.status !== 200) {
-      alert(TOKEN_PROBLEMA_OBTENIENDO);
+      showNotification("error", TOKEN_PROBLEMA_OBTENIENDO)
       return;
     }
     sessionStorage.setItem("access_token", tokenResponse.data.access_token);
     window.location.href = "/";
   } catch (error) {
-    alert(USUARIO_CREACION_PROBLEMA);
+    showNotification("error", USUARIO_CREACION_PROBLEMA)
   }
 }
 
 async function handleSendOtpCode(event) {
   event.preventDefault();
   if (await verifyEmail() !== null) {
-    alert(USUARIO_CORREO_EN_USO);
+    showNotification("warning", USUARIO_CORREO_EN_USO)
     return;
   }
   await sendOtpCode();
+  showNotification("success", OTP_ENVIADO)
 }
 
 // Eventos

@@ -11,7 +11,7 @@ export const URL_ROL_SELECT = `${URL_BASE}/${URL_API}/rol/`;
 // Usuario
 export const URL_USUARIO_SELECT = `${URL_BASE}/${URL_API}/usuario/`;
 export const URL_USUARIO_SELECT_BY_EMAIL = `${URL_BASE}/${URL_API}/usuario/email?email=`;
-export const URL_USUARIO_SELECT_BY_DNI = `${URL_BASE}/${URL_API}/usuario/dni?dni=`;
+export const URL_USUARIO_SELECT_BY_CEDULA = `${URL_BASE}/${URL_API}/usuario/cedula?cedula=`;
 export const URL_USUARIO_SELECT_INFO = `${URL_BASE}/${URL_API}/user/info/`;
 export const URL_USUARIO_LOGIN = `${URL_BASE}/${URL_API}/usuario/login/`;
 export const URL_USUARIO_CREATE = `${URL_BASE}/${URL_API}/usuario/`;

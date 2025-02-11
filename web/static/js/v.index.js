@@ -40,7 +40,6 @@ async function onLoad() {
 
   // Información de las materias
   const progressData = await getSubjectsProgress(userInfo)
-  console.log(progressData)
   const subjects = document.querySelector("#subjects")
   progressData.forEach(data => {
     subjects.innerHTML += getSubjectHTML(usuario, { "nombre": data.nombre_materia, "progreso": data.progreso.toFixed(2) }, data.id_materia_periodo);
@@ -140,8 +139,10 @@ async function putEvaluationsInfo(usuario, userInfo) {
     const fechaConDuracion = new Date(fechaLocal.getTime() + duracionMilisegundos);
 
     const fechaActual = new Date();
-    let iniciarEvaluacion = fechaActual > fechaLocal && fechaActual <= fechaConDuracion;
-    let verDetalles = fechaActual > fechaConDuracion;
+    // let iniciarEvaluacion = fechaActual > fechaLocal && fechaActual <= fechaConDuracion;
+    let iniciarEvaluacion = true
+    // let verDetalles = fechaActual > fechaConDuracion;
+    let verDetalles = true
 
     if (fechaActual < fechaConDuracion) {
       innerHtml += await getEvaluationHTML(usuario, evaluacion, dayFormatted, monthFormatted, yearFormatted, hoursFormatted, minutesFormatted, ampm, iniciarEvaluacion, verDetalles);
