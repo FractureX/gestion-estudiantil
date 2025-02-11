@@ -8,7 +8,8 @@ import {
   URL_MATERIA_PERIODO_SELECT_BY_ID_PERIODO_ID_MATERIA
 } from "./urls.js";
 import { makeRequest } from "./request.js";
-import { INSERT_MESSAGE, UPDATE_MESSAGE, REGISTRO_ELIMINAR, MATERIA_PERIODO_EXISTENTE } from './messages.js';
+import { INSERT_MESSAGE, UPDATE_MESSAGE, REGISTRO_ELIMINAR, MATERIA_PERIODO_EXISTENTE, DELETE_MESSAGE } from './messages.js';
+import { showNotification } from './functions.js'
 
 let materias_periodo = null;
 
@@ -62,8 +63,10 @@ export async function crudRegistro(event) {
   if (id) {
     // Modificar
     await makeRequest(URL_MATERIA_PERIODO_UPDATE, 'PATCH', {}, {"materia": materia, "periodo": periodo}, {'Content-Type': 'application/json'}, sessionStorage.getItem("access_token"), {"id": id})
-    alert(UPDATE_MESSAGE)
-    window.location.reload()
+    showNotification("success", UPDATE_MESSAGE)
+    setTimeout(() => {
+      window.location.reload()
+    }, 3000);
   } else {
     // Agregar
     const registro = await makeRequest(
@@ -76,12 +79,14 @@ export async function crudRegistro(event) {
       {}
     );
     if (registro.data.length > 0) {
-      alert(MATERIA_PERIODO_EXISTENTE);
+      showNotification("error", MATERIA_PERIODO_EXISTENTE)
       return;
     }
     await makeRequest(URL_MATERIA_PERIODO_CREATE, 'POST', {}, {"materia": materia, "periodo": periodo}, {'Content-Type': 'application/json'}, sessionStorage.getItem("access_token"), {})
-    alert(INSERT_MESSAGE)
-    window.location.reload()
+    showNotification("success", INSERT_MESSAGE)
+    setTimeout(() => {
+      window.location.reload()
+    }, 3000);
   }
 }
 
@@ -98,7 +103,10 @@ export async function editarRegistro(id) {
 export async function eliminarRegistro(id) {
   if (confirm(REGISTRO_ELIMINAR)) {
     await makeRequest(URL_MATERIA_PERIODO_DELETE, 'DELETE', {}, null, {}, sessionStorage.getItem("access_token"), {"id": id})
-    window.location.reload()
+    showNotification("success", DELETE_MESSAGE)
+    setTimeout(() => {
+      window.location.reload()
+    }, 3000);
   }
 }
 

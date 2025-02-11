@@ -5,7 +5,8 @@ import {
   URL_MATERIA_DELETE
 } from "./urls.js";
 import { makeRequest } from "./request.js";
-import { MATERIA_INGRESAR_NOMBRE, INSERT_MESSAGE, UPDATE_MESSAGE, REGISTRO_ELIMINAR } from './messages.js';
+import { MATERIA_INGRESAR_NOMBRE, INSERT_MESSAGE, UPDATE_MESSAGE, REGISTRO_ELIMINAR, DELETE_MESSAGE } from './messages.js';
+import { showNotification } from './functions.js'
 
 let materias = null;
 
@@ -43,19 +44,23 @@ export async function crudRegistro(event) {
   const id = document.getElementById('registroId').value
   const nombre = document.getElementById('nombre').value
   if (!nombre) {
-    alert(MATERIA_INGRESAR_NOMBRE);
+    showNotification("warning", MATERIA_INGRESAR_NOMBRE)
     return
   }
   if (id) {
     // Modificar
     await makeRequest(URL_MATERIA_UPDATE, 'PATCH', {}, {"nombre": nombre}, {'Content-Type': 'application/json'}, sessionStorage.getItem("access_token"), {"id": id});
-    alert(UPDATE_MESSAGE);
-    window.location.reload();
+    showNotification("success", UPDATE_MESSAGE)
+    setTimeout(() => {
+      window.location.reload()
+    }, 3000);
   } else {
     // Agregar
     await makeRequest(URL_MATERIA_CREATE, 'POST', {}, {"nombre": nombre}, {'Content-Type': 'application/json'}, sessionStorage.getItem("access_token"), {});
-    alert(INSERT_MESSAGE);
-    window.location.reload();
+    showNotification("success", INSERT_MESSAGE)
+    setTimeout(() => {
+      window.location.reload()
+    }, 3000);
   }
 }
 
@@ -73,7 +78,10 @@ export async function eliminarRegistro(id) {
   console.log("eliminarRegistro")
   if (confirm(REGISTRO_ELIMINAR)) {
     await makeRequest(URL_MATERIA_DELETE, 'DELETE', {}, null, {}, sessionStorage.getItem("access_token"), {"id": id})
-    window.location.reload()
+    showNotification("success", DELETE_MESSAGE)
+    setTimeout(() => {
+      window.location.reload()
+    }, 3000);
   }
 }
 

@@ -57,8 +57,8 @@ function validateLoginForm() {
 }
 
 export async function validateToken() {
+  console.log("validateToken")
   const token = sessionStorage.getItem("access_token");
-
   if (!token) {
     // Redirige a /login si el token no existe
     window.location.href = "/login";
