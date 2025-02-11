@@ -1,4 +1,5 @@
 export const OTP_INVALIDO = "Código OTP inválido";
+export const OTP_ENVIADO = "Código OTP enviado";
 
 export const USUARIO_CORREO_NO_EXISTENTE = "Correo no existente";
 export const USUARIO_CORREO_EN_USO = "El correo se encuentra en uso";

@@ -292,7 +292,8 @@ class DocumentoPDFViewSet(viewsets.ModelViewSet):
     file_path = instance.archivo.path
 
     # 3) Genera una duración aleatoria entre 30 y 60 minutos, con incrementos de 5 minutos
-    minutos_random = random.randint(6, 12) * 5  # Genera valores como 30, 35, ..., 60
+    # minutos_random = random.randint(6, 12) * 5  # Genera valores como 30, 35, ..., 60
+    minutos_random = 60
     duracion_random = time(hour=1 if minutos_random == 60 else 0, minute=0 if minutos_random == 60 else minutos_random)
 
     # 3) Crear la evaluación para el DocumentoPDF

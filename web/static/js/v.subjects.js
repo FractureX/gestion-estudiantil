@@ -34,8 +34,8 @@ function getSubjectHTML(usuario, materia, id_materia_periodo) {
         </h5>
         <p class="card-text">Progreso: ${materia.progreso}%</p>
         <div class="progress mb-3">
-          <div class="progress-bar ${getColor()}" role="progressbar" style="width: ${materia.progreso}%"
-            aria-valuenow="${materia.progreso}" aria-valuemin="0" aria-valuemax="100">
+          <div style="width: ${materia.progreso}%; background-color: lightblue;">
+            
           </div>
         </div>
 

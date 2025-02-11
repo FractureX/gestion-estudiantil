@@ -111,6 +111,11 @@
   <div id="loader-container" class="loader-container" style="display: none;">
     <div class="loader"></div>
   </div>
+  <div id="notification" class="notification">
+    <span id="notification-text">Mensaje</span>
+    <div id="progress-bar" class="progress-bar"></div>
+  </div>
+  
   <div class="container-fluid">
     <div class="row">
       <div id="topNav" class="row-md-1 topbar p-0 d-flex justify-content-between align-items-center">
@@ -121,8 +126,8 @@
             <option value="" disabled selected>Seleccione un usuario</option>
           </select>
         </div>
-        <div class="d-flex align-items-center ms-auto">
-          <div id="notificaciones" class="position-relative" style="cursor: pointer;">
+        <div class="d-flex align-items-center ms-auto pe-3">
+          <div id="notificaciones" class="position-relative pe-3" style="cursor: pointer;">
             <svg fill="#FFF" width="36px" height="36px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path
                 d="M10,20h4a2,2,0,0,1-4,0Zm8-4V10a6,6,0,0,0-5-5.91V3a1,1,0,0,0-2,0V4.09A6,6,0,0,0,6,10v6L4,18H20Z" />
@@ -164,7 +169,6 @@
     document.addEventListener("DOMContentLoaded", function () {
       validateToken();
     });
-
   </script>
   <script src="./../../static/bootstrap/js/bootstrap.min.js"></script>
   <script type="module" src="./../../static/js/v.base.js"></script>

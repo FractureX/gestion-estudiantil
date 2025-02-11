@@ -72,6 +72,8 @@ async function onLoad() {
     }
 
     // Obtener la información para tener las páginas por semana
+    console.log(`evaluacion.documento_pdf.fecha: ${evaluacion.documento_pdf.fecha}`)
+    console.log(`evaluacion.fecha_evaluacion: ${evaluacion.fecha_evaluacion}`)
     const weeks = getWeeksBetweenDates(evaluacion.documento_pdf.fecha, evaluacion.fecha_evaluacion)
     fetchFileAndCreateURL(evaluacion.documento_pdf.archivo).then(fileURL => {
       getPagesPerWeek(fileURL, weeks).then(pagesPerWeek => {

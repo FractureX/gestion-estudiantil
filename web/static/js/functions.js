@@ -24,10 +24,12 @@ export async function sendOtpCode() {
   );
 }
 
-export async function verifyEmail() {
+export async function verifyEmail(email = null) {
   console.log("verifyEmail")
   let id = null;
-  const email = document.getElementById("email").value;
+  if (!email) {
+    email = document.getElementById("email").value;
+  }
   const response = await makeRequest(
     URL_USUARIO_SELECT_BY_EMAIL + encodeURIComponent(email), // baseUrl
     'GET',          // method
@@ -65,7 +67,7 @@ export async function verifyOtpCode() {
     null,                   // token
     {}                      // pathParams
   );
-  returnValue = response !== null;
+  returnValue = response.status !== 400;
   return returnValue;
 }
 
@@ -95,9 +97,9 @@ export function hideLoader() {
 
 export async function getSubjectsProgress(userInfo) {
   let data = [];
-  
+
   // Obtener la data de las materias con el id de usuario
-  const materias = await makeRequest(URL_MATERIA_PERIODO_SELECT_BY_ID_PERIODO, 'GET', {}, null, {}, sessionStorage.getItem("access_token"), {periodo: userInfo.data.periodo.id});
+  const materias = await makeRequest(URL_MATERIA_PERIODO_SELECT_BY_ID_PERIODO, 'GET', {}, null, {}, sessionStorage.getItem("access_token"), { periodo: userInfo.data.periodo.id });
   materias.data.forEach(materia_periodo => {
     data[materia_periodo.materia.id] = {
       id_materia_periodo: materia_periodo.id,
@@ -182,9 +184,13 @@ export async function getSubjectsProgress(userInfo) {
 }
 
 export async function getPagesPerWeek(fileURL, weeks) {
+  if (weeks === 0) {
+    return "N/A";
+  }
   try {
     // Cargar el PDF usando PDF.js desde la URL temporal
     const pdf = await pdfjsLib.getDocument(fileURL).promise;
+    console.log(`pdf.numPages / weeks: ${pdf.numPages} / ${weeks}`)
     const pagesPerWeek = pdf.numPages / weeks;
     return pagesPerWeek; // Retornar el valor
   } catch (error) {
@@ -196,12 +202,15 @@ export async function getPagesPerWeek(fileURL, weeks) {
 export function getWeeksBetweenDates(startDate, endDate) {
   const start = new Date(startDate);
   const end = new Date(endDate);
+  console.log(`start: ${start}`)
+  console.log(`end: ${end}`)
 
   // Calcular la diferencia en milisegundos
   const diffInMs = end - start;
 
   // Convertir la diferencia de milisegundos a días
   const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
+  console.log(`diffInDays: ${diffInDays}`)
 
   // Convertir los días en semanas
   const weeks = Math.ceil(diffInDays / 7);
@@ -219,4 +228,46 @@ export async function fetchFileAndCreateURL(relativePath) {
     console.error('Error al obtener el archivo:', error);
     return null;
   }
+}
+
+export function showNotification(type, message) {
+  const notification = document.getElementById('notification');
+  const progressBar = document.getElementById('progress-bar');
+  const notificationText = document.getElementById('notification-text');
+  
+  // Reiniciar la barra de progreso eliminando el ancho
+  progressBar.style.transition = 'none'; // Desactivar la transición para reiniciar el valor
+  progressBar.style.width = '0%';  // Reiniciar la barra de progreso a 0%
+  
+  // Actualizar el mensaje y el estilo de la notificación
+  notificationText.textContent = message;
+  notification.className = 'notification show ' + type;
+  
+  // Después de un pequeño retraso, volver a aplicar la transición y animar
+  setTimeout(() => {
+    progressBar.style.transition = 'width 3s linear'; // Habilitar la transición
+    progressBar.style.width = '100%'; // Establecer el ancho al 100%
+  }, 50);  // Retardo para que se ejecute después de que se haya reiniciado la barra de progreso
+  
+  // Asegurarse de que la notificación se haga visible
+  notification.style.transform = 'translate(-50%, 0px)';
+  
+  // Escuchar el evento de fin de transición de la barra de progreso
+  progressBar.addEventListener('transitionend', () => {
+    // Mover la notificación fuera de la pantalla antes de cerrarla
+    notification.style.transition = 'transform 0.5s ease-in-out'; // Animar el movimiento
+    notification.style.transform = 'translate(-50%, -100%)'; // Mover fuera de la pantalla
+    
+    // Después de la animación de cierre, eliminar la clase 'show' para ocultar la notificación
+    setTimeout(() => {
+      closeNotification();
+    }, 500); // Esperar 0.5s para completar la animación
+  });
+}
+
+export function closeNotification() {
+  const notification = document.getElementById("notification");
+  notification.classList.remove("show");
+  notification.style.transition = ''; // Resetear la transición
+  notification.style.transform = ''; // Resetear el estilo de transform
 }

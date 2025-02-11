@@ -11,7 +11,6 @@ let userInfo = null
 let notificaciones = null
 
 async function onLoad() {
-  console.log("onLoad")
   // Obtener la información de usuario
   userInfo = await makeRequest(URL_USUARIO_SELECT_INFO, 'GET', {}, null, {}, sessionStorage.getItem("access_token"));
 
@@ -54,7 +53,7 @@ async function putNotificationEvent() {
             sessionStorage.getItem("access_token"), // token
             { id: notificaciones[i].id } // pathParams
           ).then(data => {
-            console.log(data)
+            
           });
         }
       }
@@ -88,8 +87,6 @@ async function putNotificationInfo() {
     const fechaActual = new Date();
 
     // 3. Comparar las fechas (ignorando la zona horaria)
-    console.log(`fechaNotificacion: ${fechaNotificacion}`)
-    console.log(`fechaActual: ${fechaActual}`)
     if (fechaNotificacion.getTime() <= fechaActual.getTime()) {
       // La fecha de la notificación es menor o igual a la fecha actual
 

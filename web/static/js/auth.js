@@ -1,13 +1,14 @@
 import { URL_USUARIO_LOGIN, URL_TOKEN_VALIDATE } from "./urls.js"
 import { makeRequest } from './request.js';
 import { USUARIO_CREDENCIALES_INVALIDAS, USUARIO_INGRESAR_DATOS, TOKEN_PROBLEMA_VALIDANDO } from './messages.js';
+import { showNotification } from './functions.js'
 
 export async function login(event) {
   event.preventDefault();
   const data = validateLoginForm();
 
   if (!data) {
-    alert(USUARIO_INGRESAR_DATOS);
+    showNotification("warning", USUARIO_INGRESAR_DATOS);
     return;
   }
 
@@ -26,7 +27,7 @@ export async function login(event) {
       sessionStorage.setItem("access_token", response.data.access_token);
       window.location.href = "/";
     } else {
-      alert(USUARIO_CREDENCIALES_INVALIDAS);
+      showNotification("error", USUARIO_CREDENCIALES_INVALIDAS);
     }
   } catch (error) {
     console.error("Error en el login:", error);

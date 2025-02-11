@@ -8,7 +8,7 @@ import {
 import { MENSAJE_CARGAR_PDF } from "./historial_data.js"
 import { makeRequest } from "./request.js";
 import { getCurrentDateTime } from "./utils.js";
-import { getPagesPerWeek, getWeeksBetweenDates } from "./functions.js";
+import { getPagesPerWeek, getWeeksBetweenDates, showNotification } from "./functions.js";
 
 // Funcionalidad de arrastrar y soltar
 const dropZone = document.getElementById('dropZone');
@@ -31,10 +31,10 @@ dropZone.addEventListener('drop', (e) => {
   e.preventDefault();
   dropZone.classList.remove('border-primary');
   fileInput.files = e.dataTransfer.files;
-  updateFilesToUpload();
+  updateFilesToUpload("success", "Archivo(s) seleccionado(s) exitosamente");
 });
 
-fileInput.addEventListener('change', updateFilesToUpload);
+fileInput.addEventListener('change', event => {updateFilesToUpload("success", "Archivo(s) seleccionado(s) exitosamente")});
 
 document.getElementById('uploadForm').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -51,10 +51,10 @@ function removeFile(fileName) {
     }
   }
   fileInput.files = dt.files;
-  updateFilesToUpload();
+  updateFilesToUpload("error", "Archivo eliminado exitosamente");
 }
 
-function updateFilesToUpload() {
+function updateFilesToUpload(type = null, message = null) {
   filesToUpload.innerHTML = '';
 
   for (let file of fileInput.files) {
@@ -154,6 +154,9 @@ function updateFilesToUpload() {
 
     filesToUpload.appendChild(fileItem);
   }
+  if (type && message) {
+    showNotification(type, message)
+  }
 }
 
 async function uploadFiles() {
@@ -161,7 +164,7 @@ async function uploadFiles() {
   const usuario = await makeRequest(URL_USUARIO_SELECT_INFO, 'GET', {}, null, {}, sessionStorage.getItem("access_token"));
   const files = fileInput.files; // Obtenemos los archivos seleccionados
   if (files.length === 0) {
-    alert('No hay archivos seleccionados.');
+    showNotification("warning", "No hay archivo(s) seleccionado(s)")
     return;
   }
 
@@ -173,7 +176,7 @@ async function uploadFiles() {
     const selectedDate = fileItem ? fileItem.dataset.selectedDate : null; // Obtener la fecha seleccionada
 
     if (!selectedDate) {
-      alert(`No se ha seleccionado una fecha para el archivo: ${file.name}`);
+      showNotification("warning", `No se ha seleccionado una fecha para el archivo: ${file.name}`)
       continue; // Saltar este archivo si no tiene fecha seleccionada
     }
     i++
@@ -187,9 +190,12 @@ async function uploadFiles() {
     await makeRequest(URL_DOCUMENTOS_PDF_CREATE, 'POST', {}, formData, {}, sessionStorage.getItem("access_token"));
     await makeRequest(URL_HISTORIAL_CREATE, 'POST', {}, { "usuario": usuario.data.id, "descripcion": `${MENSAJE_CARGAR_PDF} ${file.name}`, "fecha": fechaActualUTC }, { 'Content-Type': 'application/json' }, sessionStorage.getItem("access_token"));
   }
-  if (i === files.length) {
-    window.location.reload();
-    alert("Archivo(s) guardado(s) de forma exitosa");
+
+  if (i === files.length && i > 0) {
+    setTimeout(() => {
+      window.location.reload();
+    }, 3000);
+    showNotification("success", "Archivo(s) guardado(s) de forma exitosa")
   }
 }
 

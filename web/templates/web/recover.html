@@ -22,6 +22,10 @@
   <div id="loader-container" class="loader-container" style="display: none;">
     <div class="loader"></div>
   </div>
+  <div id="notification" class="notification">
+    <span id="notification-text">Mensaje</span>
+    <div id="progress-bar" class="progress-bar"></div>
+  </div>
   
   <div class="container recover-container">
     <div class="recover-box">
@@ -71,7 +75,15 @@
       </form>
     </div>
   </div>
-
+  <script type="module">
+    import { showNotification, closeNotification } from "./../../static/js/functions.js";
+    window.handleShowNotification = function (type, message) {
+      showNotification(type, message);
+    }
+    window.handleCloseNotification = function () {
+      closeNotification();
+    }
+  </script>
 </body>
 
 </html>

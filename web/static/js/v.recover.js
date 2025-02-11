@@ -1,7 +1,7 @@
 import { URL_USUARIO_UPDATE } from './urls.js';
-import { sendOtpCode, verifyEmail, verifyOtpCode } from './functions.js';
+import { sendOtpCode, verifyEmail, verifyOtpCode, showNotification } from './functions.js';
 import { makeRequest } from './request.js';
-import { USUARIO_CORREO_NO_EXISTENTE, OTP_INVALIDO } from './messages.js';
+import { USUARIO_CORREO_NO_EXISTENTE, OTP_INVALIDO, OTP_ENVIADO } from './messages.js';
 
 async function validateForm() {
   let id = null;
@@ -12,11 +12,11 @@ async function validateForm() {
   }
   id = await verifyEmail()
   if (id === null) {
-    alert(USUARIO_CORREO_NO_EXISTENTE);
+    showNotification("error", USUARIO_CORREO_NO_EXISTENTE)
     return null;
   }
   if (!await verifyOtpCode()) {
-    alert(OTP_INVALIDO);
+    showNotification("error", OTP_INVALIDO)
     return null;
   }
   return {
@@ -56,10 +56,12 @@ async function recover(event) {
 async function handleSendOtpCode(event) {
   event.preventDefault();
   if (await verifyEmail() === null) {
-    alert(USUARIO_CORREO_NO_EXISTENTE);
+    showNotification("error", USUARIO_CORREO_NO_EXISTENTE)
     return;
   }
+  showNotification()
   await sendOtpCode();
+  showNotification("success", OTP_ENVIADO)
 }
 
 // Eventos

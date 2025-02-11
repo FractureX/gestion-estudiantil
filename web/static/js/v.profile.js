@@ -5,7 +5,7 @@ import {
 } from "./urls.js";
 import { makeRequest } from "./request.js";
 import { UPDATE_MESSAGE } from './messages.js';
-import { getSubjectsProgress } from './functions.js'
+import { getSubjectsProgress, verifyEmail } from './functions.js'
 
 let usuario = null;
 let userInfo = null;
@@ -37,6 +37,7 @@ async function onLoad() {
 async function handleEdit() {
   const inputNombre = document.getElementById("inputnombre")
   const inputApellido = document.getElementById("inputapellido")
+  const inputEmail = document.getElementById("inputemail")
   const inputPassword = document.getElementById("inputpassword")
   const rolselect = document.getElementById("rolselect")
   const editBtn = document.getElementById("editar")
@@ -46,8 +47,10 @@ async function handleEdit() {
     inputNombre.textContent = ""
     inputApellido.textContent = ""
     inputPassword.value = ""
+    inputEmail.textContent = ""
     inputNombre.style.display = "inline"
     inputApellido.style.display = "inline"
+    inputEmail.style.display = "inline"
     inputPassword.style.display = "inline"
     rolselect.style.display = usuario.data.rol.id === 1 && userInfo.data.id !== usuario.data.id? "inline" : "none"
   } else {
@@ -56,6 +59,7 @@ async function handleEdit() {
     inputNombre.style.display = "none"
     inputApellido.style.display = "none"
     inputPassword.style.display = "none"
+    inputEmail.style.display = "none"
     rolselect.style.display = "none"
     const nombres = inputNombre.value
     const apellidos = inputApellido.value
@@ -64,7 +68,14 @@ async function handleEdit() {
       "apellidos": apellidos === "" ? userInfo.data.apellidos : apellidos,
       "rol": rolselect.value
     }
-    console.log(`inputPassword.value: ${inputPassword.value}`)
+    console.log(`inputEmail.textContent: ${inputEmail.value}`)
+    if (inputEmail.value !== "") {
+      data['email'] = inputEmail.value
+      if (await verifyEmail(inputEmail.value)) {
+        alert("El email está en uso")
+        return;
+      }
+    }
     if (inputPassword.value !== "") {
       data['password'] = inputPassword.value
     }

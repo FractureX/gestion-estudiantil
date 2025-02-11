@@ -40,6 +40,7 @@ async function onLoad() {
 
   // Información de las materias
   const progressData = await getSubjectsProgress(userInfo)
+  console.log(progressData)
   const subjects = document.querySelector("#subjects")
   progressData.forEach(data => {
     subjects.innerHTML += getSubjectHTML(usuario, { "nombre": data.nombre_materia, "progreso": data.progreso.toFixed(2) }, data.id_materia_periodo);
@@ -72,8 +73,8 @@ function getSubjectHTML(usuario, materia, id_materia_periodo) {
         <p class="card-text">Progreso: ${materia.progreso}%</p>
 
         <div class="progress mb-3">
-          <div class="progress-bar ${getColor()}" role="progressbar" style="width: ${materia.progreso}%"
-            aria-valuenow="${materia.progreso}" aria-valuemin="0" aria-valuemax="100">
+          <div style="width: ${materia.progreso}%; background-color: lightblue;">
+            
           </div>
         </div>
         ${usuario.data.rol.id !== 1 ? `<div class="d-flex gap-2">
