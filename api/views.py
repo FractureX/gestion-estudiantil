@@ -280,89 +280,88 @@ class DocumentoPDFViewSet(viewsets.ModelViewSet):
 
   def perform_create(self, serializer):
     instance = serializer.save()
-    # Llama al método post-creación
-    self.after_creation(instance, serializer)
+    self.process_evaluation_and_notifications(instance, serializer)
+  
+  def perform_update(self, serializer):
+    instance = serializer.save()
+    self.process_evaluation_and_notifications(instance, serializer)
     
-  def after_creation(self, instance, serializer):
-    print(f"serializer.initial_data: {serializer.initial_data}")
-    # 1) Extraer fecha_evaluacion del QueryDict
-    fecha_evaluacion = serializer.initial_data.get('fecha_evaluacion')
-    
-    # 2) Extraer la ubicación del archivo
+  def process_evaluation_and_notifications(self, instance, serializer, update=False):
+    fecha_evaluacion = serializer.initial_data.get('fecha_evaluacion', None)
     file_path = instance.archivo.path
 
-    # 3) Genera una duración aleatoria entre 30 y 60 minutos, con incrementos de 5 minutos
-    # minutos_random = random.randint(6, 12) * 5  # Genera valores como 30, 35, ..., 60
-    minutos_random = 60
-    duracion_random = time(hour=1 if minutos_random == 60 else 0, minute=0 if minutos_random == 60 else minutos_random)
+    # Si es actualización, obtenemos la evaluación existente o creamos una nueva
+    if update:
+      evaluacion, created = Evaluacion.objects.get_or_create(documento_pdf=instance)
+      evaluacion.documento_pdf = instance
+      evaluacion.titulo = os.path.splitext(os.path.basename(file_path))[0]
+      evaluacion.fecha_evaluacion = fecha_evaluacion
+      evaluacion.duracion = time(hour=1, minute=0)  # Se mantiene 60 min por defecto
+      evaluacion.save()
 
-    # 3) Crear la evaluación para el DocumentoPDF
-    titulo = os.path.splitext(os.path.basename(file_path))[0]
-    evaluacion = Evaluacion.objects.create(
-      documento_pdf=instance,
-      titulo=titulo,
-      fecha_evaluacion=fecha_evaluacion,  # Usamos la fecha del documento
-      duracion=duracion_random  # Establecer una duración predeterminada o calculada
-    )
+      # Eliminar preguntas antiguas antes de regenerar
+      evaluacion.preguntas.all().delete()
+    else:
+      evaluacion, created = Evaluacion.objects.get_or_create(
+        documento_pdf=instance,
+        defaults={
+          "documento_pdf": instance,
+          "titulo": os.path.splitext(os.path.basename(file_path))[0],
+          "fecha_evaluacion": fecha_evaluacion,
+          "duracion": time(hour=1, minute=0)
+        }
+      )
+      if not created:
+        # Si ya existe, solo actualiza la fecha
+        evaluacion.documento_pdf = instance
+        evaluacion.titulo = os.path.splitext(os.path.basename(file_path))[0]
+        evaluacion.fecha_evaluacion = fecha_evaluacion
+        evaluacion.duracion = time(hour=1, minute=0)  # Se mantiene 60 min por defecto
+        evaluacion.save()
 
-    # 5) Crear las preguntas en el modelo `Pregunta`
+    # Eliminar las preguntas actuales
+    Pregunta.objects.filter(evaluacion=evaluacion).delete()
+
+    # Procesar el PDF y generar preguntas
     questions_answers = process_pdf_and_generate_qa(file_path)
     for qa in questions_answers:
       Pregunta.objects.create(
-        evaluacion=evaluacion,  # Asociar la pregunta con la evaluación
-        pregunta=qa["pregunta"],  # Pregunta generada
-        respuesta_correcta=qa["respuesta_correcta"],  # Respuesta correcta generada por la IA
-        respuesta="",  # Inicialmente sin respuesta, o poner lógica si es necesario
-        puntaje=0.0  # Establecer puntaje predeterminado
+        evaluacion=evaluacion,
+        pregunta=qa["pregunta"],
+        respuesta_correcta=qa["respuesta_correcta"],
+        respuesta="",
+        puntaje=0.0
       )
-    
-    # 6) Crear las notificaciones
-    fecha_evaluacion_str = serializer.initial_data.get('fecha_evaluacion')
-    usuario = get_object_or_404(Usuario, id=evaluacion.documento_pdf.usuario.id) # Obtener la instancia del usuario
 
-    if fecha_evaluacion_str:
+    # Manejo de notificaciones
+    usuario = get_object_or_404(Usuario, id=evaluacion.documento_pdf.usuario.id)
+    if fecha_evaluacion:
       try:
-        # Usar datetime.strptime() para parsear fecha y hora
-        print(f"fecha_evaluacion_str: {fecha_evaluacion_str}")
-        fecha_evaluacion_datetime = datetime.strptime(fecha_evaluacion_str, '%Y-%m-%dT%H:%M')
-
+        fecha_evaluacion_datetime = datetime.strptime(fecha_evaluacion, '%Y-%m-%dT%H:%M')
         fecha_actual = datetime.now()
-
-        print(f"fecha_actual: {fecha_actual}")
-        print(f"fecha_evaluacion: {fecha_evaluacion_datetime}")
-
         diferencia_tiempo = fecha_evaluacion_datetime - fecha_actual
-
         intervalo = diferencia_tiempo / 9
 
-        fechas_notificacion = []
+        # Eliminar notificaciones previas si se está actualizando
+        if update:
+          Notificacion.objects.filter(usuario=usuario, evaluacion=evaluacion.id).delete()
+
+        # Crear nuevas notificaciones
         for i in range(10):
           fecha_notificacion = fecha_actual + intervalo * i
-          fechas_notificacion.append(fecha_notificacion)
-
-        print(f"evaluacion: {evaluacion}")
-        for fecha in fechas_notificacion:
-          print(f"fecha: {fecha}")
           Notificacion.objects.create(
-            usuario = usuario,
-            titulo = f"{evaluacion.documento_pdf.materia_periodo.materia.nombre}",
-            descripcion = f"Recordatorio de estudio - {evaluacion.documento_pdf.archivo.name.split('/').pop()}",
-            fecha_creacion = datetime.now(),
-            fecha_aparicion = fecha,
-            url = "#",
-            visto = False
+            usuario=usuario,
+            evaluacion=evaluacion,
+            titulo=evaluacion.documento_pdf.materia_periodo.materia.nombre,
+            descripcion=f"Recordatorio de estudio - {evaluacion.documento_pdf.archivo.name.split('/').pop()}",
+            fecha_creacion=datetime.now(),
+            fecha_aparicion=fecha_notificacion,
+            url="#",
+            visto=False
           )
 
       except ValueError as e:
-        print(f"Error de valor: {e}")  # Imprime el mensaje de error específico
-        print(f"Cadena recibida: {fecha_evaluacion_str}")  # Imprime la cadena para inspeccionarla
-        print(f"Tipo de dato: {type(fecha_evaluacion_str)}") # Imprime el tipo de dato
-        print(f"Error: El formato de fecha '{fecha_evaluacion_str}' es incorrecto. Debe ser 'YYYY-MM-DDTHH:MM'")
-        # ... (manejo de error)
-
-    else:
-      print("Advertencia: No se proporcionó la fecha de evaluación.")
-      # ... (manejo de fecha faltante)
+          print(f"Error en la fecha de evaluación: {e}")
 
   def destroy(self, request, *args, **kwargs):
     instance = self.get_object()
@@ -419,8 +418,11 @@ class PreguntaViewSet(viewsets.ModelViewSet):
   def get_queryset(self):
     queryset = Pregunta.objects.all()
     evaluacion = self.request.query_params.get('evaluacion')
+    usuario = self.request.query_params.get('usuario')
     if evaluacion is not None:
       queryset = queryset.filter(evaluacion=evaluacion)
+    if usuario is not None:
+      queryset = queryset.filter(evaluacion__documento_pdf__usuario=usuario)
     return queryset
 
   def update(self, request, *args, **kwargs):

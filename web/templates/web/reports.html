@@ -1,0 +1,91 @@
+{% extends "./base.html" %}
+{% load static %}
+
+{% block title %}Reportes{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h1 class="mb-4">Reportes</h1>
+  <div class="contenedorPrincipal mb-4">
+    <div class="row">
+      <div class="col-md-6">
+        <canvas id="GraficoMaterialesCargados"></canvas>
+      </div>
+      <div class="col-md-6">
+        <div id="contenedorTablaMateriales"></div>
+      </div>
+    </div>
+  </div>
+  <div class="contenedorPrincipal mb-4">
+    <div class="row">
+      <div class="col-md-6">
+        <canvas id="GraficoPreguntasGeneradas"></canvas>
+      </div>
+      <div class="col-md-6">
+        <div id="contenedorTablaPreguntas"></div>
+      </div>
+    </div>
+  </div>
+  <div class="contenedorPrincipal mb-4">
+    <div class="row">
+      <div class="col-md-6">
+        <canvas id="GraficoEvaluacionesRealizadas"></canvas>
+      </div>
+      <div class="col-md-6">
+        <div id="contenedorEvaluacionesRealizadas"></div>
+      </div>
+    </div>
+  </div>
+  <div class="contenedorPrincipal mb-4">
+    <div class="row">
+      <div class="col-md-6">
+        <canvas id="GraficoPromedioRespuestasCorrectas"></canvas>
+      </div>
+      <div class="col-md-6">
+        <div id="contenedorPromedioRespuestasCorrectas"></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_body %}
+<script type="module" src="{% static 'js/v.reports.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  #GraficoMaterialesCargados,
+  #GraficoPreguntasGeneradas,
+  #GraficoEvaluacionesRealizadas,
+  #GraficoPromedioRespuestasCorrectas {
+    width: 100%;
+    height: 400px;
+  }
+
+  .contenedorPrincipal {
+    border: 2px solid rgba(0, 123, 255, 0.5);
+    padding: 10px;
+    border-radius: 10px;
+  }
+
+  #contenedorTablaMateriales table,
+  #contenedorTablaPreguntas table,
+  #contenedorEvaluacionesRealizadas table,
+  #contenedorPromedioRespuestasCorrectas table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  #contenedorTablaMateriales th,
+  #contenedorTablaMateriales td,
+  #contenedorTablaPreguntas th,
+  #contenedorTablaPreguntas td,
+  #contenedorEvaluacionesRealizadas th,
+  #contenedorEvaluacionesRealizadas td,
+  #contenedorPromedioRespuestasCorrectas th,
+  #contenedorPromedioRespuestasCorrectas td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+</style>
+{% endblock %}

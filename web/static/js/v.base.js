@@ -6,6 +6,7 @@ import {
   URL_NOTIFICACION_UPDATE
 } from "./urls.js";
 import { makeRequest } from "./request.js";
+import { showNotification } from "./functions.js";
 
 let userInfo = null
 let notificaciones = null
@@ -76,6 +77,7 @@ async function putNotificationInfo() {
     sessionStorage.getItem("access_token"),
     {}
   )
+  let nuevaNotificacion = false
   notificaciones.data.forEach(notificacion => {
     const fechaISO = notificacion.fecha_aparicion;
 
@@ -111,6 +113,9 @@ async function putNotificationInfo() {
       const fechaFormateada = `${dia}/${mes}/${anio} ${horas12}:${minutos} ${ampm}`;
 
       const claseVisto = notificacion.visto ? '' : 'notificacion-no-visto';
+      if (!notificacion.visto) {
+        nuevaNotificacion = true;
+      }
       document.getElementById("lista-notificaciones").innerHTML += `
         <a class="dropdown-item" href="#">
           <div class="notificacion ${claseVisto}">
@@ -122,10 +127,13 @@ async function putNotificationInfo() {
       `;
     } else {
       // La fecha de la notificación es posterior a la fecha actual
-      console.log("La notificación es futura:", notificacion.fecha_aparicion);
+      // console.log("La notificación es futura:", notificacion.fecha_aparicion);
       // Puedes optar por no mostrarla o mostrar un mensaje diferente
     }
   });
+  if (nuevaNotificacion) {
+    showNotification("warning", "Tienes nuevas notificaciones")
+  }
 }
 
 async function putAdminUiInfo() {

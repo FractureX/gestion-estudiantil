@@ -25,7 +25,6 @@ export async function sendOtpCode() {
 }
 
 export async function verifyEmail(email = null) {
-  console.log("verifyEmail")
   let id = null;
   if (!email) {
     email = document.getElementById("email").value;
@@ -54,7 +53,6 @@ export function getOtpCode() {
 }
 
 export async function verifyOtpCode() {
-  console.log("verifyOtpCode")
   const email = document.getElementById("email").value;
   const otp = getOtpCode();
   let returnValue = false;
@@ -75,7 +73,7 @@ export async function verifyCedula(cedula = null) {
   if (!cedula) {
     cedula = document.getElementById("cedula").value;
   }
-  
+
   let returnValue = false;
   const response = await makeRequest(
     URL_USUARIO_VERIFY_OTP, // baseUrl
@@ -189,15 +187,12 @@ export async function getSubjectsProgress(userInfo) {
 export function getWeeksBetweenDates(startDate, endDate) {
   const start = new Date(startDate);
   const end = new Date(endDate);
-  console.log(`start: ${start}`)
-  console.log(`end: ${end}`)
 
   // Calcular la diferencia en milisegundos
   const diffInMs = end - start;
 
   // Convertir la diferencia de milisegundos a días
   const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
-  console.log(`diffInDays: ${diffInDays}`)
 
   // Convertir los días en semanas
   const weeks = Math.ceil(diffInDays / 7);
@@ -212,7 +207,6 @@ export async function getPagesPerWeek(fileURL, weeks) {
   try {
     // Cargar el PDF usando PDF.js desde la URL temporal
     const pdf = await pdfjsLib.getDocument(fileURL).promise;
-    console.log(`pdf.numPages / weeks: ${pdf.numPages} / ${weeks}`)
     const pagesPerWeek = pdf.numPages / weeks;
     return pagesPerWeek; // Retornar el valor
   } catch (error) {
@@ -237,30 +231,30 @@ export function showNotification(type, message) {
   const notification = document.getElementById('notification');
   const progressBar = document.getElementById('progress-bar');
   const notificationText = document.getElementById('notification-text');
-  
+
   // Reiniciar la barra de progreso eliminando el ancho
   progressBar.style.transition = 'none'; // Desactivar la transición para reiniciar el valor
   progressBar.style.width = '0%';  // Reiniciar la barra de progreso a 0%
-  
+
   // Actualizar el mensaje y el estilo de la notificación
   notificationText.textContent = message;
   notification.className = 'notification show ' + type;
-  
+
   // Después de un pequeño retraso, volver a aplicar la transición y animar
   setTimeout(() => {
     progressBar.style.transition = 'width 3s linear'; // Habilitar la transición
     progressBar.style.width = '100%'; // Establecer el ancho al 100%
   }, 50);  // Retardo para que se ejecute después de que se haya reiniciado la barra de progreso
-  
+
   // Asegurarse de que la notificación se haga visible
   notification.style.transform = 'translate(-50%, 0px)';
-  
+
   // Escuchar el evento de fin de transición de la barra de progreso
   progressBar.addEventListener('transitionend', () => {
     // Mover la notificación fuera de la pantalla antes de cerrarla
     notification.style.transition = 'transform 0.5s ease-in-out'; // Animar el movimiento
     notification.style.transform = 'translate(-50%, -100%)'; // Mover fuera de la pantalla
-    
+
     // Después de la animación de cierre, eliminar la clase 'show' para ocultar la notificación
     setTimeout(() => {
       closeNotification();
@@ -273,4 +267,240 @@ export function closeNotification() {
   notification.classList.remove("show");
   notification.style.transition = ''; // Resetear la transición
   notification.style.transform = ''; // Resetear el estilo de transform
+}
+
+// Función para obtener las últimas 4 semanas
+export function getLast4Weeks() {
+  const today = new Date();
+  const weeks = [];
+  for (let i = 0; i < 4; i++) {
+    const start = new Date(today);
+    start.setDate(today.getDate() - (today.getDay() + 7 * i));
+    const end = new Date(today);
+    end.setDate(today.getDate() - (today.getDay() + 7 * i - 6));
+    weeks.push(`${start.toLocaleDateString()} - ${end.toLocaleDateString()}`);
+  }
+  return weeks.reverse(); // Ordenar las semanas de más antigua a más reciente
+}
+
+// Función para filtrar los datos por fecha y materia
+export function filterData(data, labels) {
+  const datasets = {};
+  const tableData = [];
+
+  labels.forEach((label, labelIndex) => { // Añadir index para la tabla
+    const [startStr, endStr] = label.split('-');
+    const start = parseDate(startStr);
+    const end = parseDate(endStr);
+
+    data.forEach(item => {
+      const fechaItem = parseDate(item.fecha);
+      if (fechaItem >= start && fechaItem <= end) {
+        const materia = item.materia_periodo.materia.nombre;
+        if (!datasets[materia]) {
+          datasets[materia] = new Array(labels.length).fill(0); // Inicializar con ceros
+        }
+        datasets[materia][labelIndex]++; // Incrementar en el índice correcto
+      }
+    });
+  });
+
+  const datasetsArray = [];
+  for (const materia in datasets) {
+    datasetsArray.push({
+      label: materia,
+      data: datasets[materia], // Usar el array pre-calculado
+      backgroundColor: getRandomColor()
+    });
+
+    // Agregar datos para la tabla (después de calcular dataForMateria)
+    tableData.push({
+      materia: materia,
+      datos_por_semana: datasets[materia] // Usar el array pre-calculado
+    });
+  }
+
+  return { datasetsArray, tableData };
+}
+
+export function filterPreguntasGeneradas(data, labels) {
+  const datasets = {};
+  const tableData = [];
+
+  labels.forEach((label, labelIndex) => {
+    const [startStr, endStr] = label.split('-');
+    const start = parseDate(startStr);
+    const end = parseDate(endStr);
+    data.forEach(item => {
+      const fechaEvaluacion = parseDate(item.evaluacion.fecha_evaluacion); // Usar "fecha_evaluacion"
+      if (fechaEvaluacion >= start && fechaEvaluacion <= end) {
+        const materia = item.evaluacion.documento_pdf.materia_periodo.materia.nombre;
+        if (!datasets[materia]) {
+          datasets[materia] = new Array(labels.length).fill(0);
+        }
+        datasets[materia][labelIndex]++;
+      }
+    });
+  });
+
+  const datasetsArray = [];
+  for (const materia in datasets) {
+    datasetsArray.push({
+      label: materia,
+      data: datasets[materia],
+      backgroundColor: getRandomColor()
+    });
+
+    tableData.push({
+      materia: materia,
+      datos_por_semana: datasets[materia]
+    });
+  }
+
+  return { datasetsArray, tableData };
+}
+
+export function filterEvaluacionesRealizadas(data, labels) {
+  const datasets = {};
+  const tableData = [];
+
+  labels.forEach((label, labelIndex) => {
+    const [startStr, endStr] = label.split('-');
+    const weekStart = parseDate(startStr);
+    const endWeek = parseDate(endStr);
+    const newDate = new Date()
+    const [currentDay, currentMonth, currentYear] = newDate.toLocaleDateString().split("/")
+    const [currentHours, currentMinutes, currentSeconds] = newDate.toTimeString().split(" ")[0].split(":")
+    const currentDateStr = `${currentYear}-${currentMonth.length === 1 ? ("0" + currentMonth) : currentMonth}-${currentDay}T${currentHours}:${currentMinutes}:${currentSeconds}.000Z`
+    const currentDate = parseDate(currentDateStr) // YYYY-MM-DDTHH:mm:ss.sssZ
+
+    data.forEach(item => {
+      const fechaEvaluacionSinDuracion = parseDate(item.fecha_evaluacion);
+      const fechaEvaluacionConDuracion = parseDate(item.fecha_evaluacion, item.duracion);
+      if (currentDate > fechaEvaluacionConDuracion && (fechaEvaluacionSinDuracion >= weekStart && fechaEvaluacionSinDuracion <= endWeek)) {
+        const materia = item.documento_pdf.materia_periodo.materia.nombre;
+        if (!datasets[materia]) {
+          datasets[materia] = new Array(labels.length).fill(0);
+        }
+        datasets[materia][labelIndex]++;
+      }
+    });
+  });
+
+  const datasetsArray = [];
+  for (const materia in datasets) {
+    datasetsArray.push({
+      label: materia,
+      data: datasets[materia],
+      backgroundColor: getRandomColor()
+    });
+
+    tableData.push({
+      materia: materia,
+      datos_por_semana: datasets[materia]
+    });
+  }
+
+  return { datasetsArray, tableData };
+}
+
+export function filterPromedioRespuestasCorrectas(data, labels) {
+  const datasets = {};
+  const tableData = [];
+
+  labels.forEach((label, labelIndex) => {
+    const [startStr, endStr] = label.split('-');
+    const start = parseDate(startStr);
+    const end = parseDate(endStr);
+
+    const preguntasPorMateria = {};
+
+    data.forEach(item => {
+      const fechaEvaluacion = parseDate(item.evaluacion.fecha_evaluacion);
+      if (fechaEvaluacion >= start && fechaEvaluacion <= end) {
+        const materia = item.evaluacion.documento_pdf.materia_periodo.materia.nombre;
+
+        if (!preguntasPorMateria[materia]) {
+          preguntasPorMateria[materia] = { correctas: 0, total: 0 }; // Inicializar objeto con contadores
+        }
+
+        preguntasPorMateria[materia].total++;
+        if (item.puntaje >= 5) {
+          preguntasPorMateria[materia].correctas++;
+        }
+      }
+    });
+
+    for (const materia in preguntasPorMateria) {
+      const correctas = preguntasPorMateria[materia].correctas;
+      const total = preguntasPorMateria[materia].total;
+      const promedio = total > 0 ? (correctas / total) * 100 : 0;
+
+      if (!datasets[materia]) {
+        datasets[materia] = new Array(labels.length).fill(0);
+      }
+      // datasets[materia][labelIndex] = promedio;
+      datasets[materia][labelIndex] = correctas;
+      console.log(`labelIndex`, labelIndex)
+      tableData.push({
+        materia: materia,
+        datos_por_semana: datasets[materia],
+        correctas: correctas, // Guardar la cantidad total de respuestas correctas
+        total: total, // Guardar la cantidad total de preguntas
+        promedio: promedio.toFixed(2) + "%"
+      });
+    }
+  });
+
+  const datasetsArray = [];
+  for (const materia in datasets) {
+    datasetsArray.push({
+      label: materia,
+      data: datasets[materia],
+      backgroundColor: getRandomColor()
+    });
+  }
+
+  console.log(`datasetsArray`, datasetsArray)
+  console.log(`tableData`, tableData)
+  return { datasetsArray, tableData };
+}
+
+// Función para generar un color aleatorio
+export function getRandomColor() {
+  const letters = '0123456789ABCDEF';
+  let color = '#';
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
+
+// Función para devolver un date con respecto
+export function parseDate(dateString, durationString = null) {
+  let date;
+
+  if (dateString.includes('/')) { // Formato DD/MM/YYYY
+    const [day, month, year] = dateString.split('/');
+    const stringStr = `${year.replace(" ", "")}-${month.replace(" ", "")}-${day.replace(" ", "")}`
+    date = new Date(stringStr);
+  } else if (dateString.includes('T')) { // Formato YYYY-MM-DDTHH:mm:ss.sssZ
+    const [fechaParte, tiempoParte] = dateString.split('T');
+    const [year, month, day] = fechaParte.split('-');
+    const [hours, minutes] = tiempoParte.slice(0, 5).split(':');
+    const stringStr = `${year.replace(" ", "")}-${month.replace(" ", "")}-${day.replace(" ", "")}T${hours.replace(" ", "")}:${minutes.replace(" ", "")}`
+    date = new Date(stringStr);
+  } else {
+    // Manejar otros formatos o lanzar un error si no se reconoce el formato
+    console.error("Formato de fecha no reconocido:", dateString);
+    return null;
+  }
+
+  if (durationString) { // Si se proporciona la duración
+    const [hours, minutes, seconds] = durationString.split(':');
+    const durationMilliseconds = (parseInt(hours) * 3600 + parseInt(minutes) * 60 + parseInt(seconds)) * 1000;
+    date.setTime(date.getTime() + durationMilliseconds);
+  }
+
+  return date;
 }

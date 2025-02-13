@@ -25,7 +25,7 @@ async function onLoad() {
   const div_evaluaciones = document.querySelector("#evaluations");
   let innerHtml = ``
   evaluaciones.data.forEach(evaluacion => {
-
+    
     // Extraer la fecha y la hora de la cadena ISO (sin la T y Z)
     const fechaEvaluacion = evaluacion.fecha_evaluacion.split('T');
     const fecha = fechaEvaluacion[0]; // '2024-11-18'
@@ -50,31 +50,30 @@ async function onLoad() {
     hoursFormatted = hoursFormatted % 12 || 12; // Convertir a formato de 12 horas
 
     // Convertir la duración de "01:00:00" (HH:MM:SS) a milisegundos
-    const duracion = evaluacion.duracion; // "01:00:00"
-    const [horasDuracion, minutosDuracion, segundosDuracion] = duracion.split(":").map(Number);
-    const duracionMilisegundos = (horasDuracion * 60 * 60 + minutosDuracion * 60 + segundosDuracion) * 1000;
+    // const duracion = evaluacion.duracion; // "01:00:00"
+    // const [horasDuracion, minutosDuracion, segundosDuracion] = duracion.split(":").map(Number);
+    // const duracionMilisegundos = (horasDuracion * 60 * 60 + minutosDuracion * 60 + segundosDuracion) * 1000;
 
     // Crear la fecha con duración sumada
-    const fechaConDuracion = new Date(fechaLocal.getTime() + duracionMilisegundos);
+    // const fechaConDuracion = new Date(fechaLocal.getTime() + duracionMilisegundos);
 
     // Obtener la fecha actual
-    const fechaActual = new Date();
+    // const fechaActual = new Date();
 
     // Comparar la fecha actual con la fecha original y la fecha con duración
-    let iniciarEvaluacion = false;
+    // let iniciarEvaluacion = false;
     // let verDetalles = false;
+    let iniciarEvaluacion = true;
     let verDetalles = true;
 
     // Condiciones para verificar si se puede iniciar la evaluación o ver detalles
-    if (fechaActual > fechaLocal && fechaActual <= fechaConDuracion && evaluacion.duracion !== "00:00:00") {
-      iniciarEvaluacion = true;
-    } else if (fechaActual > fechaConDuracion) {
-      verDetalles = true;
-    }
+    // if (fechaActual > fechaLocal && fechaActual <= fechaConDuracion && evaluacion.duracion !== "00:00:00") {
+    //   iniciarEvaluacion = true;
+    // } else if (fechaActual > fechaConDuracion) {
+    //   verDetalles = true;
+    // }
 
     // Obtener la información para tener las páginas por semana
-    console.log(`evaluacion.documento_pdf.fecha: ${evaluacion.documento_pdf.fecha}`)
-    console.log(`evaluacion.fecha_evaluacion: ${evaluacion.fecha_evaluacion}`)
     const weeks = getWeeksBetweenDates(evaluacion.documento_pdf.fecha, evaluacion.fecha_evaluacion)
     fetchFileAndCreateURL(evaluacion.documento_pdf.archivo).then(fileURL => {
       getPagesPerWeek(fileURL, weeks).then(pagesPerWeek => {

@@ -3,13 +3,16 @@ import {
   URL_DOCUMENTOS_PDF_CREATE,
   URL_DOCUMENTOS_PDF_SELECT_BY_ID_USUARIO_ID_MATERIA_PERIODO,
   URL_MATERIA_PERIODO_SELECT_BY_ID,
-  URL_HISTORIAL_CREATE
+  URL_HISTORIAL_CREATE,
+  URL_DOCUMENTOS_PDF_DELETE,
+  URL_DOCUMENTOS_PDF_UPDATE,
+  URL_EVALUACION_SELECT_BY_ID_DOCUMENTO_PDF
 } from "./urls.js";
 import { MENSAJE_CARGAR_PDF } from "./historial_data.js"
 import { makeRequest } from "./request.js";
 import { getCurrentDateTime } from "./utils.js";
 import { getPagesPerWeek, getWeeksBetweenDates, showNotification } from "./functions.js";
-import { INSERT_ERROR_MESSAGE } from './messages.js'
+import { DELETE_ERROR_MESSAGE, DELETE_MESSAGE, INSERT_ERROR_MESSAGE, REGISTRO_ELIMINAR, UPDATE_ERROR_MESSAGE } from './messages.js'
 
 // Funcionalidad de arrastrar y soltar
 const dropZone = document.getElementById('dropZone');
@@ -35,7 +38,7 @@ dropZone.addEventListener('drop', (e) => {
   updateFilesToUpload("success", "Archivo(s) seleccionado(s) exitosamente");
 });
 
-fileInput.addEventListener('change', event => {updateFilesToUpload("success", "Archivo(s) seleccionado(s) exitosamente")});
+fileInput.addEventListener('change', event => { updateFilesToUpload("success", "Archivo(s) seleccionado(s) exitosamente") });
 
 document.getElementById('uploadForm').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -250,20 +253,153 @@ async function loadData() {
 
   // Iterar sobre los documentos PDF ordenados y crear elementos para mostrarlos
   documentos_pdf.data.forEach(documento_pdf => {
-    const archivoURL = documento_pdf.archivo;  // URL completa del archivo PDF
-    const nombreArchivo = archivoURL.split('/').pop();  // Obtener el nombre del archivo desde la URL
+    makeRequest(URL_EVALUACION_SELECT_BY_ID_DOCUMENTO_PDF, 'GET', {
+      'documento_pdf': documento_pdf.id
+    }, null, {}, sessionStorage.getItem("access_token")).then(evaluacion => {
+      console.log(evaluacion.data);
 
-    // Crear un nuevo elemento para mostrar el archivo
-    uploadedFiles.innerHTML += `
-      <div class="d-flex justify-content-between align-items-center bg-light p-2 rounded mb-2">
-        <span>${nombreArchivo}</span>
-        <button type="button" class="btn btn-sm btn-outline-primary" onclick="window.open('${archivoURL}', '_blank')">
-          <i class="bi bi-eye"></i> Ver
-        </button>
-      </div>
+      const archivoURL = documento_pdf.archivo;
+      const nombreArchivo = archivoURL.split('/').pop();
+
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const minDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+
+      uploadedFiles.innerHTML += `
+        <div class="bg-light p-2 rounded mb-2" id="pdf-${documento_pdf.id}">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="fw-bold me-2">Nombre del archivo: <span class="fw-normal">${nombreArchivo}</span></span>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="window.open('${archivoURL}', '_blank')">
+                        <i class="bi bi-eye"></i> Ver
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="modifyPDF(${documento_pdf.id})">
+                        <i class="bi bi-pencil"></i> Modificar
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="deletePDF(${documento_pdf.id})">
+                        <i class="bi bi-trash"></i> Eliminar
+                    </button>
+                </div>
+            </div>
+
+            <div id="edit-section-${documento_pdf.id}" class="mt-2 d-none">
+                <input type="file" class="form-control mb-2" id="file-${documento_pdf.id}" name="file-${documento_pdf.id}">
+                <input type="datetime-local" class="form-control mb-2" id="date-${documento_pdf.id}" name="date-${documento_pdf.id}" min="${minDateTime}">
+                <input type="text" class="form-control mb-2" id="pages-${documento_pdf.id}" name="pages-${documento_pdf.id}" placeholder="Páginas por semana" value="Páginas por semana: -" disabled>
+                <button type="button" class="btn btn-success" onclick="savePDF(${documento_pdf.id})">Guardar</button>
+            </div>
+        </div>
     `;
+
+      // Obtener el input de fecha y el campo de páginas por semana
+      const dateTimeInput = document.getElementById(`date-${documento_pdf.id}`);
+      const pagesContainer = document.getElementById(`pages-${documento_pdf.id}`);
+
+      // Evento para calcular "Páginas por semana" al seleccionar la fecha
+      dateTimeInput.addEventListener('change', async () => {
+        const selectedDate = dateTimeInput.value;
+        const minDate = new Date(minDateTime);  // Create Date objects for comparison
+        const selected = new Date(selectedDate);
+
+        if (selected < minDate) {
+          dateTimeInput.value = minDateTime;  // Reset the input to the min date
+          return; // Stop further execution
+        }
+
+        let weeks = getWeeksBetweenDates(minDateTime, selectedDate);
+        weeks = weeks === 0 ? 1 : weeks;
+
+        console.log(`Semanas calculadas para ${documento_pdf.id}: ${weeks}`);
+
+        try {
+          pagesContainer.value = `Páginas por semana: Cargando...`;
+          let paginasPorSemana = await getPagesPerWeek(archivoURL, weeks);
+          paginasPorSemana = paginasPorSemana < 1 ? 1 : paginasPorSemana;
+          pagesContainer.value = paginasPorSemana !== null
+            ? `Páginas por semana: ${paginasPorSemana}`
+            : 'Páginas por semana: Error al calcular';
+        } catch (error) {
+          pagesContainer.value = 'Páginas por semana: Error al calcular';
+        }
+      });
+    });
   });
 }
+
+window.savePDF = async function (id) {
+  console.log(`savePDF: ${id}`)
+  const fileInput = document.getElementById(`file-${id}`);
+  const dateInput = document.getElementById(`date-${id}`);
+  const pagesInput = document.getElementById(`pages-${id}`);
+
+  const selectedFile = fileInput.files[0];
+  const evaluationDate = dateInput.value;
+  const pagesPerWeek = pagesInput.value;
+
+  console.log(`Guardando PDF ${id}:`, { selectedFile, evaluationDate, pagesPerWeek });
+
+  // ------------------------------------------------------------------------------ //
+  // Obtener la información del usuario
+  const usuario = await makeRequest(URL_USUARIO_SELECT_INFO, 'GET', {}, null, {}, sessionStorage.getItem("access_token"));
+  if (!selectedFile) {
+    showNotification("warning", "No ha seleccionado el archivo")
+    return;
+  }
+  if (!evaluationDate) {
+    showNotification("warning", "No ha seleccionado la fecha")
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('usuario', usuario.data.id);
+  formData.append('materia_periodo', id_materia_periodo);
+  formData.append('archivo', selectedFile);
+  formData.append('fecha_evaluacion', evaluationDate);
+
+  console.table(formData)
+
+  // Realizar la solicitud para cargar el archivo
+  let response = await makeRequest(URL_DOCUMENTOS_PDF_UPDATE, 'PATCH', {}, formData, {}, sessionStorage.getItem("access_token"), { "id": id })
+  if (response.status !== 200) {
+    showNotification("error", UPDATE_ERROR_MESSAGE)
+    return;
+  }
+  const fechaActualUTC = getCurrentDateTime();
+  response = await makeRequest(URL_HISTORIAL_CREATE, 'POST', {}, { "usuario": usuario.data.id, "descripcion": `${MENSAJE_CARGAR_PDF} ${selectedFile.name}`, "fecha": fechaActualUTC }, { 'Content-Type': 'application/json' }, sessionStorage.getItem("access_token"));
+  if (response.status !== 201) {
+    showNotification("error", INSERT_ERROR_MESSAGE)
+    return;
+  }
+
+  setTimeout(() => {
+    window.location.reload();
+  }, 3000);
+  showNotification("success", "Archivo(s) guardado(s) de forma exitosa")
+};
+
+window.modifyPDF = async function (id) {
+  console.log(`modifyPDF(${id})`)
+  const editSection = document.getElementById(`edit-section-${id}`);
+  editSection.classList.toggle("d-none");
+};
+
+window.deletePDF = async function (id) {
+  if (confirm(REGISTRO_ELIMINAR)) {
+    const response = await makeRequest(URL_DOCUMENTOS_PDF_DELETE, 'DELETE', {}, null, {}, sessionStorage.getItem("access_token"), { "id": id })
+    if (response.status === 204) {
+      showNotification("success", DELETE_MESSAGE)
+      setTimeout(() => {
+        window.location.reload()
+      }, 3000);
+    } else {
+      showNotification("error", DELETE_ERROR_MESSAGE)
+    }
+  }
+};
 
 document.addEventListener("DOMContentLoaded", loadData);
 document.querySelector("#sortSelect").addEventListener("change", loadData)

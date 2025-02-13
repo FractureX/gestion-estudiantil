@@ -47,21 +47,26 @@ export async function makeRequest(baseUrl, method, params = {}, data = null, hea
   }
 
   try {
-    // Enviar la solicitud
     const response = await fetch(urlObj, options);
+
+    let responseData = null;
+    if (response.status !== 204) {  // Solo intenta parsear JSON si hay contenido
+      responseData = await response.json();
+    }
+
     return {
       "status": response.status,
       "message": "",
-      "data": await response.json()
-    }
+      "data": responseData
+    };
   } catch (error) {
-    console.table(error)
+    console.table(error);
     return {
       "status": 500,
       "message": `Hubo un problema con la operación fetch: ${error}`,
       "data": {}
-    }
+    };
   } finally {
-    hideLoader()
+    hideLoader();
   }
 }

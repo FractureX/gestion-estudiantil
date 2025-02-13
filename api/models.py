@@ -103,6 +103,7 @@ class OTPCode(models.Model):
 
 class Notificacion(models.Model):
   usuario = models.ForeignKey(to=Usuario, on_delete=models.CASCADE, related_name="notificaciones", null=False)
+  evaluacion = models.ForeignKey(to=Evaluacion, on_delete=models.CASCADE, related_name="notificaciones")
   titulo = models.CharField(max_length=255, null=False)
   descripcion = models.TextField(null=False)
   fecha_creacion = models.DateTimeField(default=timezone.now, null=False)

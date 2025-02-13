@@ -50,6 +50,8 @@ export const URL_DOCUMENTOS_PDF_SELECT_ALL = `${URL_BASE}/${URL_API}/documento-p
 export const URL_DOCUMENTOS_PDF_SELECT_BY_ID_USUARIO = `${URL_BASE}/${URL_API}/documento-pdf/`;
 export const URL_DOCUMENTOS_PDF_SELECT_BY_ID_USUARIO_ID_MATERIA_PERIODO = `${URL_BASE}/${URL_API}/documento-pdf/`;
 export const URL_DOCUMENTOS_PDF_CREATE = `${URL_BASE}/${URL_API}/documento-pdf/`;
+export const URL_DOCUMENTOS_PDF_UPDATE = `${URL_BASE}/${URL_API}/documento-pdf/{id}/`;
+export const URL_DOCUMENTOS_PDF_DELETE = `${URL_BASE}/${URL_API}/documento-pdf/{id}/`;
 
 // Evaluación
 export const URL_EVALUACION_SELECT_BY_ID = `${URL_BASE}/${URL_API}/evaluacion/{id}`;
@@ -60,6 +62,7 @@ export const URL_EVALUACION_UPDATE = `${URL_BASE}/${URL_API}/evaluacion/{id}/`;
 // Preguntas
 export const URL_PREGUNTA_SELECT_ALL = `${URL_BASE}/${URL_API}/pregunta/`;
 export const URL_PREGUNTA_SELECT_BY_ID_EVALUACION = `${URL_BASE}/${URL_API}/pregunta/`;
+export const URL_PREGUNTA_SELECT_BY_ID_USUARIO = `${URL_BASE}/${URL_API}/pregunta/`;
 export const URL_PREGUNTA_UPDATE_BY_ID = `${URL_BASE}/${URL_API}/pregunta/{id}/`;
 
 // Historial

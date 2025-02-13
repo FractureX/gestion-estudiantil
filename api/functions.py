@@ -53,7 +53,6 @@ def process_pdf_and_generate_qa(file_path):
       inputs = question_tokenizer.encode(input_text, return_tensors="pt", truncation=True)
       
       # Generar preguntas
-      print("Generar preguntas")
       outputs = question_model.generate(
         inputs,
         max_length=64,
@@ -65,7 +64,6 @@ def process_pdf_and_generate_qa(file_path):
       for output in outputs:
         # Pregunta traducida al español
         pregunta_a_traducir = question_tokenizer.decode(output, skip_special_tokens=True)
-        print(f"pregunta_a_traducir: {pregunta_a_traducir}")
         if (pregunta_a_traducir not in preguntas_traducidas):
           preguntas_traducidas.append(pregunta_a_traducir)
           pregunta = translate(pregunta_a_traducir, src="en", dest="es")
@@ -90,7 +88,6 @@ def process_pdf_and_generate_qa(file_path):
             respuesta_correcta = translate(respuesta, src="en", dest="es")
             if (respuesta_correcta is not None):
               # Guardar la pregunta y la respuesta
-              print(f"Guardar la pregunta y la respuesta: {pregunta} -> {respuesta_correcta}")
               preguntas_respuestas.append({
                 "pregunta": pregunta,
                 "respuesta_correcta": respuesta_correcta

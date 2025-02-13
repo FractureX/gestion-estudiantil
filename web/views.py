@@ -12,9 +12,6 @@ def recover(request):
 def profile(request):
   return render(request, 'web/profile.html')
 
-def config(request):
-  return render(request, 'web/config.html')
-
 def manage_period(request):
   return render(request, 'web/manage-period.html')
 
@@ -50,3 +47,9 @@ def evaluation_details(request):
 
 def progress(request):
   return render(request, 'web/progress.html')
+
+def reports(request):
+  return render(request, 'web/reports.html')
+
+def settings(request):
+  return render(request, 'web/settings.html')
