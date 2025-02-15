@@ -68,3 +68,6 @@ export const URL_PREGUNTA_UPDATE_BY_ID = `${URL_BASE}/${URL_API}/pregunta/{id}/`
 // Historial
 export const URL_HISTORIAL_SELECT_BY_ID_USUARIO = `${URL_BASE}/${URL_API}/historial/`;
 export const URL_HISTORIAL_CREATE = `${URL_BASE}/${URL_API}/historial/`;
+
+// PDF
+export const URL_REPORTE_PDF = `${URL_BASE}/${URL_API}/report/pdf/`;

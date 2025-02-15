@@ -6,17 +6,17 @@
 {% block content %}
 <div class="container py-4">
   <h1 class="mb-4">Reportes</h1>
-  <div class="contenedorPrincipal mb-4">
+  <div id="divMaterialesCargados" class="contenedorPrincipal mb-4">
     <div class="row">
       <div class="col-md-6">
         <canvas id="GraficoMaterialesCargados"></canvas>
       </div>
       <div class="col-md-6">
-        <div id="contenedorTablaMateriales"></div>
+        <div id="contenedorTablaMaterialesCargados"></div>
       </div>
     </div>
   </div>
-  <div class="contenedorPrincipal mb-4">
+  <div id="divPreguntasGeneradas" class="contenedorPrincipal mb-4">
     <div class="row">
       <div class="col-md-6">
         <canvas id="GraficoPreguntasGeneradas"></canvas>
@@ -26,7 +26,7 @@
       </div>
     </div>
   </div>
-  <div class="contenedorPrincipal mb-4">
+  <div id="divEvaluacionesRealizadas" class="contenedorPrincipal mb-4">
     <div class="row">
       <div class="col-md-6">
         <canvas id="GraficoEvaluacionesRealizadas"></canvas>
@@ -36,33 +36,83 @@
       </div>
     </div>
   </div>
-  <div class="contenedorPrincipal mb-4">
+  <div id="divAnalisisPreguntas" class="contenedorPrincipal mb-4">
     <div class="row">
       <div class="col-md-6">
-        <canvas id="GraficoPromedioRespuestasCorrectas"></canvas>
+        <canvas id="GraficoAnalisisPreguntas"></canvas>
       </div>
       <div class="col-md-6">
-        <div id="contenedorPromedioRespuestasCorrectas"></div>
+        <div id="contenedorAnalisisPreguntas"></div>
+      </div>
+    </div>
+  </div>
+  <div id="divTemasMayorDificultad" class="contenedorPrincipal mb-4">
+    <div class="row">
+      <div class="col-md-6">
+        <canvas id="GraficoTemasMayorDificultad"></canvas>
+      </div>
+      <div class="col-md-6">
+        <div id="contenedorTemasMayorDificultad"></div>
+      </div>
+    </div>
+  </div>
+  <div id="divEvolucionCalificaciones" class="contenedorPrincipal mb-4">
+    <div class="row">
+      <div class="col-md-6">
+        <canvas id="GraficoEvolucionCalificaciones"></canvas>
+      </div>
+      <div class="col-md-6">
+        <div id="contenedorEvolucionCalificaciones"></div>
       </div>
     </div>
   </div>
 </div>
+<button id="btn-download-pdf" class="floating-button" title="Descargar PDF">
+  <img src="./../../static/images/pdf.svg" alt="Descripción de la imagen SVG" width="24px" height="24px">
+</button>
 {% endblock %}
 
 {% block extra_body %}
 <script type="module" src="{% static 'js/v.reports.js' %}"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="./../../static/js/html2canvas.min.js"></script>
+<script src="./../../static/js/chart.umd.min.js"></script>
 <style>
+  .floating-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #ff5722;
+    color: white;
+    border: none;
+    padding: 15px 20px;
+    border-radius: 50px;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
+    transition: background 0.3s, transform 0.2s;
+  }
+
+  .floating-button:hover {
+    background-color: #e64a19;
+    transform: scale(1.1);
+  }
+
   #GraficoMaterialesCargados,
   #GraficoPreguntasGeneradas,
   #GraficoEvaluacionesRealizadas,
-  #GraficoPromedioRespuestasCorrectas {
+  #GraficoAnalisisPreguntas,
+  #GraficoTemasMayorDificultad,
+  #GraficoEvolucionCalificaciones {
     width: 100%;
     height: 400px;
   }
 
+  #divMaterialesCargados {
+    border-radius: 10px;
+  }
+
   .contenedorPrincipal {
-    border: 2px solid rgba(0, 123, 255, 0.5);
+    border: 2px solid rgba(5, 39, 58, 1);
     padding: 10px;
     border-radius: 10px;
   }
@@ -70,7 +120,9 @@
   #contenedorTablaMateriales table,
   #contenedorTablaPreguntas table,
   #contenedorEvaluacionesRealizadas table,
-  #contenedorPromedioRespuestasCorrectas table {
+  #contenedorAnalisisPreguntas table,
+  #contenedorTemasMayorDificultad table,
+  #contenedorEvolucionCalificaciones table {
     width: 100%;
     border-collapse: collapse;
   }
@@ -81,8 +133,12 @@
   #contenedorTablaPreguntas td,
   #contenedorEvaluacionesRealizadas th,
   #contenedorEvaluacionesRealizadas td,
-  #contenedorPromedioRespuestasCorrectas th,
-  #contenedorPromedioRespuestasCorrectas td {
+  #contenedorAnalisisPreguntas th,
+  #contenedorAnalisisPreguntas td,
+  #contenedorTemasMayorDificultad th,
+  #contenedorTemasMayorDificultad td,
+  #contenedorEvolucionCalificaciones th,
+  #contenedorEvolucionCalificaciones td {
     border: 1px solid #ddd;
     padding: 8px;
     text-align: left;

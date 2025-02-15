@@ -1,8 +1,12 @@
+from io import BytesIO
 import os
-
-import random
+import tempfile
+import comtypes
+from django.http import FileResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 from django.forms import ValidationError
+from docx import Document
+import comtypes.client
 from rest_framework import viewsets, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -19,6 +23,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from django.core.mail import send_mail
+from PIL import Image
 from .models import (
   OTPCode,
   Rol, 
@@ -298,6 +303,12 @@ class DocumentoPDFViewSet(viewsets.ModelViewSet):
       evaluacion.fecha_evaluacion = fecha_evaluacion
       evaluacion.duracion = time(hour=1, minute=0)  # Se mantiene 60 min por defecto
       evaluacion.save()
+      # Creamos un registro en historial
+      Historial.objects.create(
+        usuario=evaluacion.documento_pdf.usuario,
+        descripcion=f'Archivo actualizado en la materia {evaluacion.documento_pdf.materia_periodo.materia.nombre}',
+        fecha=datetime.now()
+      )
 
       # Eliminar preguntas antiguas antes de regenerar
       evaluacion.preguntas.all().delete()
@@ -318,6 +329,12 @@ class DocumentoPDFViewSet(viewsets.ModelViewSet):
         evaluacion.fecha_evaluacion = fecha_evaluacion
         evaluacion.duracion = time(hour=1, minute=0)  # Se mantiene 60 min por defecto
         evaluacion.save()
+      # Creamos un registro en historial
+      Historial.objects.create(
+        usuario=evaluacion.documento_pdf.usuario,
+        descripcion=f'Archivo subido en la materia {evaluacion.documento_pdf.materia_periodo.materia.nombre}',
+        fecha=datetime.now()
+      )
 
     # Eliminar las preguntas actuales
     Pregunta.objects.filter(evaluacion=evaluacion).delete()
@@ -545,3 +562,103 @@ def VerifyOtpCode(request):
     return Response({"message": "OTP válido"})
   else:
     return Response({"error": "OTP inválido o expirado"}, status=400)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def DownloadReportPDF(request):
+    print("DownloadReportPDF")
+    
+    NOMBRE = request.POST.get('NOMBRE')
+    CEDULA = request.POST.get('CEDULA')
+    PERIODO = request.POST.get('PERIODO')
+    MATERIALESCARGADOS = request.POST.get('MATERIALESCARGADOS')
+    PREGUNTASGENERADAS = request.POST.get('PREGUNTASGENERADAS')
+    EVALUACIONESREALIZADAS = request.POST.get('EVALUACIONESREALIZADAS')
+
+    imagenes = {key: value for key, value in request.FILES.items()}
+
+    datos = {
+        'NOMBRE': NOMBRE,
+        'CEDULA': CEDULA,
+        'PERIODO': PERIODO,
+        'MATERIALESCARGADOS': MATERIALESCARGADOS,
+        'PREGUNTASGENERADAS': PREGUNTASGENERADAS,
+        'EVALUACIONESREALIZADAS': EVALUACIONESREALIZADAS
+    }
+
+    template_path = "template.docx"
+
+    # Crear un archivo temporal para el DOCX
+    temp_docx = tempfile.NamedTemporaryFile(delete=False, suffix=".docx")
+    temp_docx_filename = temp_docx.name
+    temp_docx.close()
+
+    # Cargar el documento
+    doc = Document(template_path)
+
+    # Reemplazar palabras clave en el documento
+    for paragraph in doc.paragraphs:
+        for key, value in datos.items():
+            for run in paragraph.runs:
+                if key in run.text:
+                    run.text = run.text.replace(key, value)
+
+    # Insertar imágenes
+    for paragraph in doc.paragraphs:
+        for key, file in imagenes.items():
+            if key in paragraph.text:
+                paragraph.clear()
+                try:
+                    with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as temp_img:
+                        for chunk in file.chunks():
+                            temp_img.write(chunk)
+                        temp_img_path = temp_img.name
+
+                    with Image.open(temp_img_path) as image:
+                        image.verify()
+
+                    section = doc.sections[0]
+                    page_width = section.page_width - section.left_margin - section.right_margin
+
+                    run = paragraph.add_run()
+                    run.add_picture(temp_img_path, width=page_width)
+
+                except Exception as e:
+                    print(f"Error al procesar la imagen {key}: {e}")
+
+    # Guardar el documento DOCX
+    doc.save(temp_docx_filename)
+
+    # Crear un archivo temporal para el PDF
+    temp_pdf = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
+    temp_pdf_filename = temp_pdf.name
+    temp_pdf.close()
+
+    # Convertir DOCX a PDF usando comtypes
+    def convert_docx_to_pdf(input_path, output_path):
+      comtypes.CoInitialize()  # 🔹 Inicializar COM
+      try:
+          word = comtypes.client.CreateObject("Word.Application")
+          word.Visible = False  # Opcional: ocultar la ventana de Word
+          doc = word.Documents.Open(input_path)
+          doc.SaveAs(output_path, FileFormat=17)  # 17 es el formato PDF
+          doc.Close()
+          word.Quit()
+      except Exception as e:
+          print(f"Error al convertir DOCX a PDF: {e}")
+      finally:
+          comtypes.CoUninitialize()
+
+    convert_docx_to_pdf(temp_docx_filename, temp_pdf_filename)
+
+    # Eliminar el archivo DOCX temporal
+    os.remove(temp_docx_filename)
+
+    # Retornar el archivo PDF como respuesta
+    response = FileResponse(open(temp_pdf_filename, 'rb'), as_attachment=True, filename="Reporte.pdf")
+
+    # Eliminar el archivo después de que Django lo envíe
+    response["Content-Disposition"] = f'attachment; filename="Reporte.pdf"'
+    response["X-Delete-File"] = temp_pdf_filename
+
+    return response

@@ -242,7 +242,7 @@ export function showNotification(type, message) {
 
   // Después de un pequeño retraso, volver a aplicar la transición y animar
   setTimeout(() => {
-    progressBar.style.transition = 'width 3s linear'; // Habilitar la transición
+    progressBar.style.transition = 'width 5s linear'; // Habilitar la transición
     progressBar.style.width = '100%'; // Establecer el ancho al 100%
   }, 50);  // Retardo para que se ejecute después de que se haya reiniciado la barra de progreso
 
@@ -404,7 +404,7 @@ export function filterEvaluacionesRealizadas(data, labels) {
   return { datasetsArray, tableData };
 }
 
-export function filterPromedioRespuestasCorrectas(data, labels) {
+export function filterAnalisisRespuestas(data, labels) {
   const datasets = {};
   const tableData = [];
 
@@ -432,22 +432,21 @@ export function filterPromedioRespuestasCorrectas(data, labels) {
     });
 
     for (const materia in preguntasPorMateria) {
+      const preguntas = preguntasPorMateria[materia].total;
       const correctas = preguntasPorMateria[materia].correctas;
-      const total = preguntasPorMateria[materia].total;
-      const promedio = total > 0 ? (correctas / total) * 100 : 0;
+      const incorrectas = preguntas - correctas;
 
       if (!datasets[materia]) {
         datasets[materia] = new Array(labels.length).fill(0);
       }
       // datasets[materia][labelIndex] = promedio;
       datasets[materia][labelIndex] = correctas;
-      console.log(`labelIndex`, labelIndex)
       tableData.push({
-        materia: materia,
         datos_por_semana: datasets[materia],
-        correctas: correctas, // Guardar la cantidad total de respuestas correctas
-        total: total, // Guardar la cantidad total de preguntas
-        promedio: promedio.toFixed(2) + "%"
+        materia: materia,
+        preguntas: preguntas,
+        correctas: correctas,
+        incorrectas: incorrectas
       });
     }
   });
@@ -460,9 +459,112 @@ export function filterPromedioRespuestasCorrectas(data, labels) {
       backgroundColor: getRandomColor()
     });
   }
+  return { datasetsArray, tableData };
+}
 
-  console.log(`datasetsArray`, datasetsArray)
-  console.log(`tableData`, tableData)
+export function filterTemasMayorDificultad(data) {
+  const materias = new Set();
+
+  data.forEach(item => {
+    const materia = item.evaluacion.documento_pdf.materia_periodo.materia.nombre;
+    materias.add(materia);
+  });
+
+  const labels = Array.from(materias);
+  const datasetsArray = [];
+  const tableData = [];
+
+  const dataPorcentajes = []; // Array para los porcentajes
+
+  labels.forEach(materia => {
+    console.log(`---------------------------------------------------------------------`)
+    let correctas = 0;
+    let total = 0;
+
+    data.forEach(item => {
+      const itemMateria = item.evaluacion.documento_pdf.materia_periodo.materia.nombre;
+      if (itemMateria === materia) {
+        total++;
+        if (item.puntaje >= 5) {
+          correctas++;
+        }
+      }
+    });
+    const porcentajeIncorrectas = total > 0 ? (100 - (correctas / total) * 100) : 0;
+    dataPorcentajes.push(porcentajeIncorrectas); // Añade el porcentaje al array
+
+    tableData.push({
+      materia: materia,
+      porcentajeIncorrectas: porcentajeIncorrectas // Calcula porcentajeIncorrectas
+    });
+  });
+
+  const coloresGenerados = [];
+  datasetsArray.push({
+    label: ['Porcentaje de errores'],
+    data: dataPorcentajes,
+    backgroundColor: dataPorcentajes.map(() => {
+      const color = getRandomColor();
+      coloresGenerados.push(color); // Guarda el color generado
+      return color;
+    })
+  });
+  tableData.forEach((item, index) => {
+    item.color = coloresGenerados[index]; // Asigna el color correspondiente
+  });
+
+  return { datasetsArray, tableData, labels };
+}
+
+export function filterEvolucionCalificaciones(data, labels) {
+  const datasets = {};
+  const tableData = [];
+
+  labels.forEach((label, labelIndex) => {
+    const [startStr, endStr] = label.split('-');
+    const start = parseDate(startStr);
+    const end = parseDate(endStr);
+
+    data.forEach(item => {
+      const fechaEvaluacion = parseDate(item.evaluacion.fecha_evaluacion);
+      if (fechaEvaluacion >= start && fechaEvaluacion <= end) {
+        const materia = item.evaluacion.documento_pdf.materia_periodo.materia.nombre;
+        const puntaje = item.puntaje;
+
+        if (!datasets[materia]) {
+          datasets[materia] = {}; // Ahora es un objeto
+        }
+
+        if (!datasets[materia][labelIndex]) { // Crea un array para cada semana
+          datasets[materia][labelIndex] = [];
+        }
+        datasets[materia][labelIndex].push(puntaje); // Guarda el puntaje directamente
+      }
+    });
+  });
+
+  const datasetsArray = [];
+  for (const materia in datasets) {
+    const dataPoints = labels.map((label, labelIndex) => {  // Itera sobre labels
+      const semanaData = datasets[materia][labelIndex] || []; // Obtén las notas de la semana o array vacío
+      const suma = semanaData.reduce((sum, puntaje) => sum + puntaje, 0); // Suma las notas de la semana
+      const cantidad = semanaData.length;
+      const promedio = cantidad > 0 ? suma / cantidad : 0;
+      return promedio;
+    });
+
+    datasetsArray.push({
+      label: materia,
+      data: dataPoints,
+      backgroundColor: getRandomColor()
+    });
+
+    tableData.push({
+      materia: materia,
+      datos_por_semana: dataPoints
+    });
+  }
+
   return { datasetsArray, tableData };
 }
 
@@ -503,4 +605,70 @@ export function parseDate(dateString, durationString = null) {
   }
 
   return date;
+}
+
+export function saveDivsAsImages(divIds, fileNames, callback) {
+  if (!Array.isArray(divIds) || !Array.isArray(fileNames) || divIds.length !== fileNames.length) {
+    console.error("Los argumentos divIds y fileNames deben ser arrays con la misma longitud.");
+    return;
+  }
+
+  const promises = [];
+
+  for (let i = 0; i < divIds.length; i++) {
+    const divId = divIds[i];
+    const fileName = fileNames[i];
+
+    const div = document.getElementById(divId);
+    if (!div) {
+      console.error(`Div no encontrado: ${divId}`);
+      continue; // Saltar al siguiente div si no se encuentra el actual
+    }
+
+    const width = div.offsetWidth;
+    const height = div.offsetHeight;
+
+    promises.push(
+      html2canvas(div, {
+        scale: 1,
+        width: width,
+        height: height,
+        onrendered: function (canvas) {
+          const context = canvas.getContext('2d');
+          context.willReadFrequently = true;
+        }
+      }).then(canvas => {
+        const imgData = canvas.toDataURL("image/png");
+        const byteString = atob(imgData.split(',')[1]);
+        const ab = new ArrayBuffer(byteString.length);
+        const ia = new Uint8Array(ab);
+        for (let j = 0; j < byteString.length; j++) {
+          ia[j] = byteString.charCodeAt(j);
+        }
+        return { bytes: ab, name: fileName }; // Devolver un objeto con bytes y nombre
+      }).catch(err => {
+        console.error(`Error al capturar div ${divId}:`, err);
+        return null; // Devolver null en caso de error
+      })
+    );
+  }
+
+
+  Promise.all(promises).then(results => {
+    const validResults = results.filter(result => result !== null); // Filtrar resultados nulos (errores)
+    if (callback) {
+      callback(validResults); // Pasar el array de objetos {bytes, name} al callback
+    } else {
+      validResults.forEach(result => {
+        const blob = new Blob([result.bytes], { type: 'image/png' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = result.name;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+      });
+    }
+  });
 }

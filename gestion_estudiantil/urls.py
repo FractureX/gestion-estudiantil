@@ -18,7 +18,8 @@ from api.views import (
   ValidateTokenAPIView,
   GetUserInfo,
   SendOtpCode,
-  VerifyOtpCode
+  VerifyOtpCode,
+  DownloadReportPDF
 )
 
 router = DefaultRouter()
@@ -41,4 +42,5 @@ urlpatterns = [
   path("api/validate_token/", ValidateTokenAPIView.as_view()), # Incluye el endpoint para validar el token
   path('api/user/otp/', SendOtpCode, name="send_otp_code"), # Envía el código OTP al correo
   path('api/user/otp/verify/', VerifyOtpCode, name="verify_otp_code"), # Verificar el código OTP
+  path('api/report/pdf/', DownloadReportPDF, name="download_report_pdf"), # Descargar reporte pdf
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

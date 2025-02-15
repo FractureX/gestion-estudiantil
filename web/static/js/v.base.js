@@ -18,7 +18,7 @@ async function onLoad() {
   // Añadir evento al perfil
   document.getElementById("perfil").addEventListener("click", (event) => { location.href = "/profile/" });
 
-  await putNotificationEvent()
+  // await putNotificationEvent()
   await putNotificationInfo()
 
   // Verificar si es administrador o usuario normal
@@ -77,8 +77,9 @@ async function putNotificationInfo() {
     sessionStorage.getItem("access_token"),
     {}
   )
-  let nuevaNotificacion = false
-  notificaciones.data.forEach(notificacion => {
+  let nuevaNotificacionMensaje = "Recordatorio de estudio:"
+
+  for (let notificacion of notificaciones.data) {
     const fechaISO = notificacion.fecha_aparicion;
 
     // 1. Extraer fecha y hora en UTC (sin la 'Z')
@@ -113,8 +114,10 @@ async function putNotificationInfo() {
       const fechaFormateada = `${dia}/${mes}/${anio} ${horas12}:${minutos} ${ampm}`;
 
       const claseVisto = notificacion.visto ? '' : 'notificacion-no-visto';
-      if (!notificacion.visto) {
-        nuevaNotificacion = true;
+      console.log(`notificacion.descripcion`, notificacion.descripcion)
+      if (!notificacion.visto && notificacion.descripcion.includes("Recordatorio de estudio") && !nuevaNotificacionMensaje.includes(notificacion.descripcion.split(" - ")[1])) {
+        nuevaNotificacionMensaje += `\n${notificacion.descripcion.split(" - ")[1]}`
+        await makeRequest(URL_NOTIFICACION_UPDATE, 'PATCH', {}, {"visto": true}, {'Content-Type': 'application/json'}, sessionStorage.getItem("access_token"), {"id": notificacion.id})
       }
       document.getElementById("lista-notificaciones").innerHTML += `
         <a class="dropdown-item" href="#">
@@ -130,9 +133,9 @@ async function putNotificationInfo() {
       // console.log("La notificación es futura:", notificacion.fecha_aparicion);
       // Puedes optar por no mostrarla o mostrar un mensaje diferente
     }
-  });
-  if (nuevaNotificacion) {
-    showNotification("warning", "Tienes nuevas notificaciones")
+  }
+  if (nuevaNotificacionMensaje !== "Recordatorio de estudio:") {
+    showNotification("warning", nuevaNotificacionMensaje)
   }
 }
 
@@ -145,10 +148,10 @@ async function putAdminUiInfo() {
     <a href="/manage-period-subject" class="nav-link">Gestión de materias por periodo</a>
     <a href="/simulator" class="nav-link">Uso del simulador</a>
   `
-    + document.getElementById("navbar").innerHTML +
-    `
-    <a href="/config" class="nav-link">Configuración</a>
-  `
+    + document.getElementById("navbar").innerHTML 
+  //  +   `
+  //   <a href="/config" class="nav-link">Configuración</a>
+  // `
 
   // Select de estudiantes
   const adminSelect = document.getElementById('adminSelect');

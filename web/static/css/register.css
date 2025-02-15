@@ -1,3 +1,7 @@
+body {
+  background-color: #002E45;
+}
+
 .register-container {
   display: flex;
   align-items: center;
