@@ -31,7 +31,6 @@
   top: 0px;
   left: 50%;
   transform: translate(-50%, -100%);
-  width: 300px;
   padding: 15px;
   color: white;
   font-size: 16px;
@@ -40,6 +39,11 @@
   align-items: center;
   justify-content: space-between;
   transition: transform 0.5s ease-in-out;
+
+  /* Ajusta al contenido */
+  width: auto;
+  max-width: 90vw; /* Evita que se extienda demasiado en pantallas grandes */
+  white-space: nowrap; /* Evita saltos de línea */
 }
 
 .notification.show {
