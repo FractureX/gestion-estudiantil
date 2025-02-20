@@ -85,8 +85,9 @@ class Pregunta(models.Model):
 class Recomendacion(models.Model):
   materia_periodo = models.ForeignKey(to=MateriaPeriodo, on_delete=models.CASCADE, related_name="recomendaciones", null=False)
   usuario = models.ForeignKey(to=Usuario, on_delete=models.CASCADE, related_name="recomendaciones", null=False)
+  evaluacion = models.ForeignKey(to=Evaluacion, on_delete=models.CASCADE, related_name="recomendaciones", null=False)
+  pregunta = models.ForeignKey(to=Pregunta, on_delete=models.CASCADE, related_name="recomendaciones", null=False)
   descripcion = models.TextField(null=False)
-  visto = models.BooleanField(null=False, default=False)
 
 class Historial(models.Model):
   usuario = models.ForeignKey(to=Usuario, on_delete=models.CASCADE, related_name="historial", null=False)

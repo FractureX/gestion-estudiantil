@@ -443,18 +443,33 @@ class PreguntaViewSet(viewsets.ModelViewSet):
     return queryset
 
   def update(self, request, *args, **kwargs):
+    from google import genai
+    client = genai.Client(api_key="AIzaSyCT0e2R7V-Pt3pdUy2Oy6Htm7uQmglN9GQ")
     # Obtener la instancia antes de la actualización
     instance = self.get_object()
     
     # Respuestas
-    respuesta_correcta = instance.respuesta_correcta
     respuesta_usuario = request.data.get("respuesta", None)
+    puntaje = request.data.get("puntaje", None)
+    
+    Recomendacion.objects.filter(pregunta=instance.id).exclude(id=instance.id).delete()
 
     # Evaluar las respuestas
-    if (respuesta_usuario == ""):
-      puntaje = 0
-    else:
-      puntaje = evaluate_user_response(respuesta_correcta, respuesta_usuario)
+    if (puntaje == 0):
+      contents = f"""
+        Dame una recomendación con respecto a: El estudiante seleccionó la respuesta '{respuesta_usuario}' y la pregunta MCQ es '{instance.pregunta}'.
+      """
+      response = client.models.generate_content(
+          model="gemini-2.0-flash",
+          contents=contents,
+      )
+      Recomendacion.objects.create(
+        materia_periodo=instance.evaluacion.documento_pdf.materia_periodo,
+        usuario=instance.evaluacion.documento_pdf.usuario,
+        evaluacion=instance.evaluacion,
+        pregunta=instance,
+        descripcion=response.text
+      )
     
     instance.puntaje = puntaje
     
@@ -471,6 +486,13 @@ class RecomendacionViewSet(viewsets.ModelViewSet):
   queryset = Recomendacion.objects.all()
   serializer_class = RecomendacionSerializer
   permission_classes = [IsAuthenticated]
+  
+  def get_queryset(self):
+    queryset = Recomendacion.objects.all()
+    evaluacion = self.request.query_params.get('evaluacion')
+    if evaluacion is not None:
+      queryset = queryset.filter(evaluacion=evaluacion)
+    return queryset
 
   def get_queryset(self):
     queryset = Recomendacion.objects.all()

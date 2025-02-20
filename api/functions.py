@@ -24,76 +24,57 @@ def translate(texto, src="es", dest="en"):
     return None
 
 def process_pdf_and_generate_qa(file_path):
+  from google import genai
+  client = genai.Client(api_key="AIzaSyCT0e2R7V-Pt3pdUy2Oy6Htm7uQmglN9GQ")
   # Variable que contendrá las preguntas y respuestas
   preguntas_respuestas = []
   
-  # Modelos
-  question_model_name = "mrm8488/t5-base-finetuned-question-generation-ap"
-  qa_model_name = "deepset/roberta-base-squad2"
-  
-  question_tokenizer = T5Tokenizer.from_pretrained(question_model_name)
-  question_model = T5ForConditionalGeneration.from_pretrained(question_model_name)
-  
-  qa_tokenizer = AutoTokenizer.from_pretrained(qa_model_name)
-  qa_model = AutoModelForQuestionAnswering.from_pretrained(qa_model_name)
-  
   # Cargar el archivo PDF
   reader = PdfReader(file_path)
-  preguntas_traducidas = []
   
   for page in reader.pages:
     # Extraer texto de la página
     texto = page.extract_text()
     
     # Limpiar el texto y traducir al inglés
-    texto_limpio = translate(re.sub(r'\s+', ' ', texto.strip()))
+    texto_limpio = re.sub(r'\s+', ' ', texto.strip())
     if (texto_limpio is not None):
       # Preparar el texto para generar preguntas
-      input_text = f"context: {texto_limpio}"
-      inputs = question_tokenizer.encode(input_text, return_tensors="pt", truncation=True)
-      
-      # Generar preguntas
-      outputs = question_model.generate(
-        inputs,
-        max_length=64,
-        num_return_sequences=1,
-        num_beams=10,
-        early_stopping=True
+      contents = f"""Genera 4 pregunta(s) de opción múltiple (MCQ) con 1 pregunta y 3 opciones a partir del siguiente texto: "{texto_limpio}". El MCQ debe seguir el siguiente patrón estrictamente:
+        1) <Pregunta N>: <Pregunta generada>
+        A) <Opción A>
+        B) <Opción B>
+        C) <Opción C>
+        Respuesta: <Opción correcta (A, B o C)>
+      """
+      response = client.models.generate_content(
+          model="gemini-2.0-flash",
+          contents=contents,
       )
-      
-      for output in outputs:
-        # Pregunta traducida al español
-        pregunta_a_traducir = question_tokenizer.decode(output, skip_special_tokens=True)
-        if (pregunta_a_traducir not in preguntas_traducidas):
-          preguntas_traducidas.append(pregunta_a_traducir)
-          pregunta = translate(pregunta_a_traducir, src="en", dest="es")
-          if (pregunta is not None):
-            # Usar modelo QA para generar respuesta
-            qa_inputs = qa_tokenizer(
-              translate(pregunta, src="es", dest="en"),  # Pregunta en inglés
-              texto_limpio,  # Contexto en inglés
-              return_tensors="pt",
-              truncation=True
-            )
-            qa_outputs = qa_model(**qa_inputs)
-            
-            # Extraer respuesta del modelo
-            respuesta_start = qa_outputs.start_logits.argmax()
-            respuesta_end = qa_outputs.end_logits.argmax()
-            respuesta = qa_tokenizer.convert_tokens_to_string(
-              qa_tokenizer.convert_ids_to_tokens(qa_inputs["input_ids"][0][respuesta_start:respuesta_end + 1])
-            )
-            
-            # Traducir respuesta al español
-            respuesta_correcta = translate(respuesta, src="en", dest="es")
-            if (respuesta_correcta is not None):
-              # Guardar la pregunta y la respuesta
-              preguntas_respuestas.append({
-                "pregunta": pregunta,
-                "respuesta_correcta": respuesta_correcta
-              })
+      print("---------------------------------------------------------------------------------")
+      questions_answers = extract_questions_and_answers(response.text)
+      print(f"response.text: {response.text}")
+      for question_answer in questions_answers:
+        preguntas_respuestas.append({
+          "pregunta": f'Pregunta: {question_answer["question"].split(": ")[1]}',
+          "respuesta_correcta": question_answer["answer"]
+        })
+      print(f"questions_answers: {len(questions_answers)}")
+      if len(preguntas_respuestas) >= 20:
+        break
   return preguntas_respuestas
-  
+
+def extract_questions_and_answers(text):
+  pattern = re.compile(r'\d+\)\s+(Pregunta\s\d+:.*?)\n\s*A\)\s*(.*?)\n\s*B\)\s*(.*?)\n\s*C\)\s*(.*?)\n\s*Respuesta:\s*([A-C])')
+  result = []
+  for match in pattern.findall(text):
+    question_text = f"{match[0]}\nA) {match[1]}\nB) {match[2]}\nC) {match[3]}"
+    result.append({
+      "question": question_text,
+      "answer": match[4]
+    })
+  return result
+
 def get_user_from_token(token: str):
   try:
     # Get the AccessToken object
@@ -154,7 +135,6 @@ def generate_feedback(responses, correct_answers, scores, user_name="Usuario"):
 # ---------------------------------------------- #
 # Función para reemplazar texto en un documento
 def replace_text_in_word(file_path, new_file_path, replacements):
-  print(f"replace_text_in_word({file_path}, {new_file_path})")
   # Abrir el documento existente
   doc = Document(file_path)
   
@@ -208,7 +188,6 @@ def update_docx_with_modified_excel(docx_path, extracted_folder, new_file_path):
 
 # ----------------------------------------------------------------------------------------- #
 def modify_word_document(file_path, new_file_path, replacements):
-  print("modify_word_document")
   # Paso 1: Extraer el contenido del archivo .docx
   # extracted_folder = 'extracted'
   # extract_docx(file_path, extracted_folder)
@@ -284,25 +263,18 @@ def modify_word_document(file_path, new_file_path, replacements):
   ])
   
 def update_graphics_in_word(docx_path, data):
-  print("update_graphics_in_word")
   replacements = {}
-  print("Flag 1")
   
   # Generar el gráfico e imagen para cada conjunto de datos
   for i, dataset in enumerate(data, start=1):
-    print("Flag 2")
     # Generar el gráfico y guardarlo como imagen
     image_path = generate_chart_and_save_image(dataset, i)
-    print("Flag 3")
     # Asociar el marcador de texto {{graficoX}} con la imagen generada
     replacements[f'var_grafico_{i}'] = image_path
-    print("Flag 4")
   # Reemplazar las imágenes en el documento de Word
-  print("Flag 5")
   replace_image_in_word(docx_path, docx_path, replacements)
 
 def generate_chart_and_save_image(data, chart_number):
-  print("generate_chart_and_save_image")
   # Inicializar COM
   pythoncom.CoInitialize()
 
@@ -405,19 +377,15 @@ def generate_chart_and_save_image(data, chart_number):
   return image_path_abs
 
 def replace_image_in_word(docx_path, new_file_path, replacements):
-  print("replace_image_in_word")
   # Abrir el documento existente
   doc = Document(docx_path)
   
   # Recorrer todos los párrafos del documento
   for paragraph in doc.paragraphs:
     for old_text, image_path in replacements.items():
-      print(f"if {old_text} in {paragraph.text}:")
       if old_text in paragraph.text:
         paragraph.clear()
         paragraph.add_run().add_picture(image_path, width=Inches(6), height=Inches(3.5))
-        print(f"os.remove: {image_path.replace('png', 'xlsx')}")
-        print(f"os.remove: {image_path}")
         os.remove(image_path.replace("png", "xlsx"))
         os.remove(image_path)
         

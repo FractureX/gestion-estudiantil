@@ -65,6 +65,9 @@ export const URL_PREGUNTA_SELECT_BY_ID_EVALUACION = `${URL_BASE}/${URL_API}/preg
 export const URL_PREGUNTA_SELECT_BY_ID_USUARIO = `${URL_BASE}/${URL_API}/pregunta/`;
 export const URL_PREGUNTA_UPDATE_BY_ID = `${URL_BASE}/${URL_API}/pregunta/{id}/`;
 
+// Feedback
+export const URL_FEEDBACK_SELECT_BY_ID_EVALUACION = `${URL_BASE}/${URL_API}/recomendacion/`;
+
 // Historial
 export const URL_HISTORIAL_SELECT_BY_ID_USUARIO = `${URL_BASE}/${URL_API}/historial/`;
 export const URL_HISTORIAL_CREATE = `${URL_BASE}/${URL_API}/historial/`;

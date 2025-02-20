@@ -132,10 +132,24 @@ class RecomendacionSerializer(serializers.ModelSerializer):
   # Mantén los campos como PrimaryKeyRelatedField para recibir solo IDs en POST y PUT
   materia_periodo = serializers.PrimaryKeyRelatedField(queryset=MateriaPeriodo.objects.all())
   usuario = serializers.PrimaryKeyRelatedField(queryset=Usuario.objects.all())
+  evaluacion = serializers.PrimaryKeyRelatedField(queryset=Evaluacion.objects.all())
+  pregunta = serializers.PrimaryKeyRelatedField(queryset=Pregunta.objects.all())
   
   class Meta:
     model = Recomendacion
     fields = '__all__'
+
+  def to_representation(self, instance):
+    # Llama al método de representación predeterminado de la clase padre
+    representation = super().to_representation(instance)
+
+    # Anida los serializadores completos para devolver datos completos en los GET
+    representation['materia_periodo'] = MateriaPeriodoSerializer(instance.materia_periodo).data
+    representation['usuario'] = UsuarioSerializer(instance.usuario).data
+    representation['evaluacion'] = EvaluacionSerializer(instance.evaluacion).data
+    representation['pregunta'] = PreguntaSerializer(instance.pregunta).data
+
+    return representation
   
   def to_representation(self, instance):
     # Llama al método de representación predeterminado de la clase padre

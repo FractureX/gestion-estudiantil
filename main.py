@@ -1,13 +1,17 @@
-from transformers import AutoModelForCausalLM, AutoTokenizer
+# Google AI Studio API Key = AIzaSyCT0e2R7V-Pt3pdUy2Oy6Htm7uQmglN9GQ
 
-model_name = "deepseek-ai/DeepSeek-R1-Distill-Llama-70B"
+from google import genai
+client = genai.Client(api_key="AIzaSyCT0e2R7V-Pt3pdUy2Oy6Htm7uQmglN9GQ")
 
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name)
+response = client.models.generate_content(
+    model="gemini-2.0-flash",
+    contents=f"""Genera 20 pregunta(s) de opción múltiple (MCQ) con 1 pregunta y 3 opciones a partir del siguiente texto: "Las bases de datos son esenciales para almacenar, organizar y gestionar datos de manera eficiente. Permiten a los usuarios recuperar, actualizar y manipular información mediante lenguajes de consulta estructurados como SQL. Existen diferentes tipos de bases de datos, incluidas las bases de datos relacionales como PostgreSQL y MySQL, así como las bases de datos NoSQL como MongoDB. Las aplicaciones modernas dependen de las bases de datos para manejar grandes volúmenes de datos, garantizando seguridad, consistencia y alto rendimiento. Con los avances en la computación en la nube, las bases de datos ahora pueden alojarse de forma remota, proporcionando escalabilidad y accesibilidad desde cualquier parte del mundo." El MCQ debe seguir el siguiente patrón estrictamente:
+    1) <Pregunta N>: <Pregunta generada>
+    A) <Opción A>
+    B) <Opción B>
+    C) <Opción C>
+    Respuesta: <Opción correcta (A, B o C)>
+    """,
+)
 
-text = "Generate a multiple-choice question from the following passage: The mitochondria is the powerhouse of the cell."
-input_ids = tokenizer(text, return_tensors="pt").input_ids
-
-output_ids = model.generate(input_ids, max_length=100, num_return_sequences=1)
-mcq = tokenizer.decode(output_ids[0], skip_special_tokens=True)
-print(mcq)
+print(response.text)
