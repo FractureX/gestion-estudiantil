@@ -1,10 +1,10 @@
 import {
-  URL_MATERIA_PERIODO_SELECT_ALL, 
-  URL_MATERIA_PERIODO_UPDATE, 
+  URL_MATERIA_PERIODO_SELECT_ALL,
+  URL_MATERIA_PERIODO_UPDATE,
   URL_MATERIA_PERIODO_CREATE,
-  URL_MATERIA_PERIODO_DELETE, 
-  URL_PERIODO_SELECT_ALL, 
-  URL_MATERIA_SELECT_ALL, 
+  URL_MATERIA_PERIODO_DELETE,
+  URL_PERIODO_SELECT_ALL,
+  URL_MATERIA_SELECT_ALL,
   URL_MATERIA_PERIODO_SELECT_BY_ID_PERIODO_ID_MATERIA
 } from "./urls.js";
 import { makeRequest } from "./request.js";
@@ -62,7 +62,7 @@ export async function crudRegistro(event) {
   const periodo = Number(document.getElementById('periodo').value)
   if (id) {
     // Modificar
-    await makeRequest(URL_MATERIA_PERIODO_UPDATE, 'PATCH', {}, {"materia": materia, "periodo": periodo}, {'Content-Type': 'application/json'}, sessionStorage.getItem("access_token"), {"id": id})
+    await makeRequest(URL_MATERIA_PERIODO_UPDATE, 'PATCH', {}, { "materia": materia, "periodo": periodo }, { 'Content-Type': 'application/json' }, sessionStorage.getItem("access_token"), { "id": id })
     showNotification("success", UPDATE_MESSAGE)
     setTimeout(() => {
       window.location.reload()
@@ -70,19 +70,19 @@ export async function crudRegistro(event) {
   } else {
     // Agregar
     const registro = await makeRequest(
-      URL_MATERIA_PERIODO_SELECT_BY_ID_PERIODO_ID_MATERIA, 
-      'GET', 
-      { "periodo": periodo, "materia": materia }, 
-      {}, 
-      { 'Content-Type': 'application/json' }, 
-      sessionStorage.getItem("access_token"), 
+      URL_MATERIA_PERIODO_SELECT_BY_ID_PERIODO_ID_MATERIA,
+      'GET',
+      { "periodo": periodo, "materia": materia },
+      {},
+      { 'Content-Type': 'application/json' },
+      sessionStorage.getItem("access_token"),
       {}
     );
     if (registro.data.length > 0) {
       showNotification("error", MATERIA_PERIODO_EXISTENTE)
       return;
     }
-    await makeRequest(URL_MATERIA_PERIODO_CREATE, 'POST', {}, {"materia": materia, "periodo": periodo}, {'Content-Type': 'application/json'}, sessionStorage.getItem("access_token"), {})
+    await makeRequest(URL_MATERIA_PERIODO_CREATE, 'POST', {}, { "materia": materia, "periodo": periodo }, { 'Content-Type': 'application/json' }, sessionStorage.getItem("access_token"), {})
     showNotification("success", INSERT_MESSAGE)
     setTimeout(() => {
       window.location.reload()
@@ -101,8 +101,9 @@ export async function editarRegistro(id) {
 }
 
 export async function eliminarRegistro(id) {
-  if (confirm(REGISTRO_ELIMINAR)) {
-    await makeRequest(URL_MATERIA_PERIODO_DELETE, 'DELETE', {}, null, {}, sessionStorage.getItem("access_token"), {"id": id})
+  const result = await window.confirmDeletion();
+  if (result === 1) {
+    await makeRequest(URL_MATERIA_PERIODO_DELETE, 'DELETE', {}, null, {}, sessionStorage.getItem("access_token"), { "id": id })
     showNotification("success", DELETE_MESSAGE)
     setTimeout(() => {
       window.location.reload()

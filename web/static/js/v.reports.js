@@ -43,7 +43,6 @@ async function onLoad() {
   putInfo()
 
   // Acción para el botón de descargar PDF
-  console.log("Antes de la acción")
   document.getElementById("btn-download-pdf").addEventListener("click", (_) => handleDownloadPdf())
 }
 

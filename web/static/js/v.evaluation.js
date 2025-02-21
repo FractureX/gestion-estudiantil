@@ -76,6 +76,9 @@ async function validateQuestions(event) {
     );
   });
 
+  // Aumentar la cantidad de intentos
+  await makeRequest(URL_EVALUACION_UPDATE, 'PATCH', {}, {"intentos": evaluation.data.intentos + 1}, {'Content-Type': 'application/json'}, sessionStorage.getItem("access_token"), {"id": evaluation.data.id})
+
   // Guardar historial
   const fechaActualUTC = getCurrentDateTime();
   await makeRequest(

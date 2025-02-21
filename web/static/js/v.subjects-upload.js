@@ -388,7 +388,8 @@ window.modifyPDF = async function (id) {
 };
 
 window.deletePDF = async function (id) {
-  if (confirm(REGISTRO_ELIMINAR)) {
+  const result = await window.confirmDeletion();
+  if (result === 1) {
     const response = await makeRequest(URL_DOCUMENTOS_PDF_DELETE, 'DELETE', {}, null, {}, sessionStorage.getItem("access_token"), { "id": id })
     if (response.status === 204) {
       showNotification("success", DELETE_MESSAGE)

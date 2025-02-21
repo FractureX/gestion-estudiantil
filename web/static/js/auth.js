@@ -77,7 +77,6 @@ export async function validateToken() {
       {}                       // pathParams
     );
   } catch (error) {
-    alert(TOKEN_PROBLEMA_VALIDANDO);
     window.location.href = "/login";  // Redirige en caso de error o token inválido
   }
 }

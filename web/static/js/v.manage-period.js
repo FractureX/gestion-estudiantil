@@ -75,8 +75,8 @@ export async function editarRegistro(id) {
 }
 
 export async function eliminarRegistro(id) {
-  console.log("eliminarRegistro")
-  if (confirm(REGISTRO_ELIMINAR)) {
+  const result = await window.confirmDeletion();
+  if (result === 1) {
     await makeRequest(URL_PERIODO_DELETE, 'DELETE', {}, null, {}, sessionStorage.getItem("access_token"), {"id": id})
     showNotification("success", DELETE_MESSAGE)
     setTimeout(() => {

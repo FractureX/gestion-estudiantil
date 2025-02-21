@@ -5,7 +5,8 @@ import {
   URL_DOCUMENTOS_PDF_SELECT_BY_ID_USUARIO,
   URL_EVALUACION_SELECT_BY_ID_DOCUMENTO_PDF,
   URL_MATERIA_PERIODO_SELECT_BY_ID_PERIODO,
-  URL_BASE
+  URL_BASE,
+  URL_PREGUNTA_SELECT_BY_ID_EVALUACION
 } from './urls.js';
 import { makeRequest } from './request.js';
 
@@ -156,7 +157,8 @@ export async function getSubjectsProgress(userInfo) {
       fechaEvaluacion.setSeconds(fechaEvaluacion.getSeconds() + segundos);
 
       // Comparar si la evaluación ya terminó
-      const presentado = fechaEvaluacion < fechaActual;
+      const presentado = fechaEvaluacion < fechaActual || evaluacion.intentos > 0;
+      console.log(`evaluacion ${evaluacion.id}: `, evaluacion.intentos)
       // ----------------------------------------------- //
       if (!data[id_materia]) {
         data[id_materia] = {
@@ -332,8 +334,8 @@ export function filterPreguntasGeneradas(data, labels) {
     const start = parseDate(startStr);
     const end = parseDate(endStr);
     data.forEach(item => {
-      const fechaEvaluacion = parseDate(item.evaluacion.fecha_evaluacion); // Usar "fecha_evaluacion"
-      if (fechaEvaluacion >= start && fechaEvaluacion <= end) {
+      const fechaDocumentoPdf = parseDate(item.evaluacion.documento_pdf.fecha); // Usar "fecha_evaluacion"
+      if ((fechaDocumentoPdf >= start && fechaDocumentoPdf <= end)) {
         const materia = item.evaluacion.documento_pdf.materia_periodo.materia.nombre;
         if (!datasets[materia]) {
           datasets[materia] = new Array(labels.length).fill(0);
@@ -368,16 +370,10 @@ export function filterEvaluacionesRealizadas(data, labels) {
     const [startStr, endStr] = label.split('-');
     const weekStart = parseDate(startStr);
     const endWeek = parseDate(endStr);
-    const newDate = new Date()
-    const [currentDay, currentMonth, currentYear] = newDate.toLocaleDateString().split("/")
-    const [currentHours, currentMinutes, currentSeconds] = newDate.toTimeString().split(" ")[0].split(":")
-    const currentDateStr = `${currentYear}-${currentMonth.length === 1 ? ("0" + currentMonth) : currentMonth}-${currentDay}T${currentHours}:${currentMinutes}:${currentSeconds}.000Z`
-    const currentDate = parseDate(currentDateStr) // YYYY-MM-DDTHH:mm:ss.sssZ
 
     data.forEach(item => {
-      const fechaEvaluacionSinDuracion = parseDate(item.fecha_evaluacion);
-      const fechaEvaluacionConDuracion = parseDate(item.fecha_evaluacion, item.duracion);
-      if (currentDate > fechaEvaluacionConDuracion && (fechaEvaluacionSinDuracion >= weekStart && fechaEvaluacionSinDuracion <= endWeek)) {
+      const fechaDocumentoPDF = parseDate(item.documento_pdf.fecha);
+      if (fechaDocumentoPDF >= weekStart && fechaDocumentoPDF <= endWeek) {
         const materia = item.documento_pdf.materia_periodo.materia.nombre;
         if (!datasets[materia]) {
           datasets[materia] = new Array(labels.length).fill(0);
@@ -416,8 +412,8 @@ export function filterAnalisisRespuestas(data, labels) {
     const preguntasPorMateria = {};
 
     data.forEach(item => {
-      const fechaEvaluacion = parseDate(item.evaluacion.fecha_evaluacion);
-      if (fechaEvaluacion >= start && fechaEvaluacion <= end) {
+      const fechaDocumentoPdf = parseDate(item.evaluacion.documento_pdf.fecha);
+      if (fechaDocumentoPdf >= start && fechaDocumentoPdf <= end) {
         const materia = item.evaluacion.documento_pdf.materia_periodo.materia.nombre;
 
         if (!preguntasPorMateria[materia]) {
@@ -526,8 +522,8 @@ export function filterEvolucionCalificaciones(data, labels) {
     const end = parseDate(endStr);
 
     data.forEach(item => {
-      const fechaEvaluacion = parseDate(item.evaluacion.fecha_evaluacion);
-      if (fechaEvaluacion >= start && fechaEvaluacion <= end) {
+      const fechaDocumentoPdf = parseDate(item.evaluacion.documento_pdf.fecha);
+      if (fechaDocumentoPdf >= start && fechaDocumentoPdf <= end) {
         const materia = item.evaluacion.documento_pdf.materia_periodo.materia.nombre;
         const puntaje = item.puntaje;
 

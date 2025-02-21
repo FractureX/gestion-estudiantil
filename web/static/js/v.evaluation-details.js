@@ -1,10 +1,12 @@
 import {
+  URL_EVALUACION_SELECT_BY_ID,
   URL_FEEDBACK_SELECT_BY_ID_EVALUACION,
   URL_PREGUNTA_SELECT_BY_ID_EVALUACION,
   URL_USUARIO_SELECT_INFO
 } from "./urls.js";
 import { makeRequest } from "./request.js";
 
+let evaluation = null
 let questions = null;
 let feedback = null;
 
@@ -14,9 +16,11 @@ async function onLoad() {
 
   // Obtener información de las preguntas
   if (sessionStorage.getItem("access_token_estudiante")) {
+    evaluation = await makeRequest(URL_EVALUACION_SELECT_BY_ID, 'GET', { "id": id_evaluation }, null, {}, sessionStorage.getItem("access_token_estudiante"), {})
     questions = await makeRequest(URL_PREGUNTA_SELECT_BY_ID_EVALUACION, 'GET', { "evaluacion": id_evaluation }, null, {}, sessionStorage.getItem("access_token_estudiante"), {})
     feedback = await makeRequest(URL_FEEDBACK_SELECT_BY_ID_EVALUACION, 'GET', { "evaluacion": id_evaluation }, null, {}, sessionStorage.getItem("access_token_estudiante"), {})
   } else {
+    evaluation = await makeRequest(URL_EVALUACION_SELECT_BY_ID, 'GET', { "id": id_evaluation }, null, {}, sessionStorage.getItem("access_token"), {})
     questions = await makeRequest(URL_PREGUNTA_SELECT_BY_ID_EVALUACION, 'GET', { "evaluacion": id_evaluation }, null, {}, sessionStorage.getItem("access_token"), {})
     feedback = await makeRequest(URL_FEEDBACK_SELECT_BY_ID_EVALUACION, 'GET', { "evaluacion": id_evaluation }, null, {}, sessionStorage.getItem("access_token"), {})
   }

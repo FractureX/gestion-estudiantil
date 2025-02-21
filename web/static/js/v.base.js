@@ -42,7 +42,7 @@ async function putNotificationEvent() {
   notificacionesIcon.addEventListener('click', () => {
     listaNotificaciones.style.display = listaNotificaciones.style.display === 'block' ? 'none' : 'block';
     if (notificaciones) {
-      for(let i = 0; i < notificaciones.data.length; i++) {
+      for (let i = 0; i < notificaciones.data.length; i++) {
         if (!notificaciones[i].visto) {
           // Actualizar
           makeRequest(
@@ -54,7 +54,7 @@ async function putNotificationEvent() {
             sessionStorage.getItem("access_token"), // token
             { id: notificaciones[i].id } // pathParams
           ).then(data => {
-            
+
           });
         }
       }
@@ -117,7 +117,7 @@ async function putNotificationInfo() {
       console.log(`notificacion.descripcion`, notificacion.descripcion)
       if (!notificacion.visto && notificacion.descripcion.includes("Recordatorio de estudio") && !nuevaNotificacionMensaje.includes(notificacion.descripcion.split(" - ")[1])) {
         nuevaNotificacionMensaje += `\n${notificacion.descripcion.split(" - ")[1]}`
-        await makeRequest(URL_NOTIFICACION_UPDATE, 'PATCH', {}, {"visto": true}, {'Content-Type': 'application/json'}, sessionStorage.getItem("access_token"), {"id": notificacion.id})
+        await makeRequest(URL_NOTIFICACION_UPDATE, 'PATCH', {}, { "visto": true }, { 'Content-Type': 'application/json' }, sessionStorage.getItem("access_token"), { "id": notificacion.id })
       }
       document.getElementById("lista-notificaciones").innerHTML += `
         <a class="dropdown-item" href="#">
@@ -143,12 +143,12 @@ async function putAdminUiInfo() {
   // Ingresar las opciones de gestión
   document.getElementById("navbar").innerHTML =
     `
-    <a href="/manage-period" class="nav-link">Gestión de periodos</a>
-    <a href="/manage-subject" class="nav-link">Gestión de materia</a>
-    <a href="/manage-period-subject" class="nav-link">Gestión de materias por periodo</a>
-    <a href="/simulator" class="nav-link">Uso del simulador</a>
+    <a href="/manage-period" class="nav-link d-flex align-items-center gap-2"><img src="./../../static/images/manage.png" alt="Descripción de la imagen SVG" width="24px" height="24px">Gestión de periodos</a>
+    <a href="/manage-subject" class="nav-link d-flex align-items-center gap-2"><img src="./../../static/images/manage.png" alt="Descripción de la imagen SVG" width="24px" height="24px">Gestión de materia</a>
+    <a href="/manage-period-subject" class="nav-link d-flex align-items-center gap-2"><img src="./../../static/images/manage.png" alt="Descripción de la imagen SVG" width="24px" height="24px">Gestión de materias por periodo</a>
+    <a href="/simulator" class="nav-link d-flex align-items-center gap-2"><img src="./../../static/images/simulator.png" alt="Descripción de la imagen SVG" width="24px" height="24px">Uso del simulador</a>
   `
-    + document.getElementById("navbar").innerHTML 
+    + document.getElementById("navbar").innerHTML
   //  +   `
   //   <a href="/config" class="nav-link">Configuración</a>
   // `
@@ -185,6 +185,37 @@ async function putAdminUiInfo() {
   if (sessionStorage.getItem("id_estudiante")) {
     adminSelect.value = sessionStorage.getItem("id_estudiante")
   }
+}
+
+window.confirmDeletion = () => {
+  return new Promise((resolve) => {
+    const modal = document.getElementById("confirmDialog");
+    const cancelBtn = document.getElementById("cancelBtn");
+    const confirmBtn = document.getElementById("confirmBtn");
+
+    // Mostrar el modal
+    modal.style.display = "flex";
+
+    // Si el usuario cancela
+    cancelBtn.onclick = () => {
+      modal.style.display = "none";
+      resolve(0);
+    };
+
+    // Si el usuario confirma
+    confirmBtn.onclick = () => {
+      modal.style.display = "none";
+      resolve(1);
+    };
+
+    // Opcional: Cerrar el modal si el usuario hace clic fuera del contenido
+    window.onclick = (event) => {
+      if (event.target === modal) {
+        modal.style.display = "none";
+        resolve(0);
+      }
+    };
+  });
 }
 
 document.addEventListener("DOMContentLoaded", onLoad);

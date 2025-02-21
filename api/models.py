@@ -69,6 +69,7 @@ class Evaluacion(models.Model):
   titulo = models.TextField(null=False)
   fecha_evaluacion = models.DateTimeField(null=False, default=timezone.now)
   duracion = models.TimeField(null=False)
+  intentos = models.IntegerField(null=False, default=0)
 
 class Pregunta(models.Model):
   evaluacion = models.ForeignKey(to=Evaluacion, on_delete=models.CASCADE, related_name="preguntas", null=False)
